@@ -16,7 +16,7 @@ main =
 
 -- MODEL
 
-type alias Model = Int
+type alias Model = List (List ())
 
 init : Model
 init =
