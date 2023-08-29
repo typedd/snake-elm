@@ -1,7 +1,9 @@
 module Main exposing (..)
 
-import Browser
-import Html exposing (Html, div)
+import Element exposing (Element, el, text, row, fill, width, height, rgb255, spacing, centerY, centerX, padding)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
 
 
 
@@ -9,34 +11,55 @@ import Html exposing (Html, div)
 
 
 main =
-  Browser.sandbox { init = init, update = update, view = view }
+  Element.layout []
+      fieldRow
+
+fieldRow : Element msg
+fieldRow = 
+  row [ width fill, height fill, spacing 1 ]
+      [ cell
+      , cell
+      , cell
+      , cell
+      ]
+
+cell : Element msg
+cell = 
+  el
+        [ centerX, centerY,
+          Background.color (rgb255 240 0 245)
+        , Font.color (rgb255 255 255 255)
+        , Border.rounded 3
+        , padding 30
+        ]
+        (text "")
 
 
 
 -- MODEL
 
-type alias Model = List (List ())
+-- type alias Model = List (List ())
 
-init : Model
-init =
-  [[],[],[]]
-
-
--- UPDATE
+-- init : Model
+-- init =
+--   [[],[],[]]
 
 
-type Msg
-  = Model
+-- -- UPDATE
 
 
-update : Msg -> Model -> Model
-update msg model = model
+-- type Msg
+--   = Model
+
+
+-- update : Msg -> Model -> Model
+-- update msg model = model
 
 
 
--- VIEW
+-- -- VIEW
 
 
-view : Model -> Html Msg
-view model =
-  div [] []
+-- view : Model -> Html Msg
+-- view model =
+--   div [] []
