@@ -1,8 +1,10 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, button, div, text)
-import Html.Events exposing (onClick)
+import Element exposing (..)
+import Html exposing (Html)
+import Element.Background as Background
+import Element.Border as Border
 
 
 
@@ -16,33 +18,49 @@ main =
 
 -- MODEL
 
-type alias Model = Int
+type alias Model = List (List ())
 
 init : Model
 init =
-  0
+  [[],[],[]]
 
 
 -- UPDATE
 
-type Msg = Increment | Decrement
+
+type Msg
+  = Model
+
 
 update : Msg -> Model -> Model
-update msg model =
-  case msg of
-    Increment ->
-      model + 1
+update msg model = model
 
-    Decrement ->
-      model - 1
 
 
 -- VIEW
 
+
 view : Model -> Html Msg
 view model =
-  div []
-    [ button [ onClick Decrement ] [ text "-" ]
-    , div [] [ text (String.fromInt model) ]
-    , button [ onClick Increment ] [ text "+" ]
-    ]
+  layout
+    []
+    fieldRow
+
+fieldRow : Element msg
+fieldRow = 
+  row [ width fill, height fill, spacing 1 ]
+      [ cell
+      , cell
+      , cell
+      , cell
+      ]
+
+cell : Element msg
+cell = 
+  el
+        [ centerX, centerY,
+          Background.color (rgb255 240 0 245)
+        , Border.rounded 3
+        , padding 30
+        ]
+        Element.none
