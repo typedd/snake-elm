@@ -51,7 +51,7 @@ fieldRow =
   row [ width fill, height fill, spacing 1 ]
       [ cell
       , cell
-      , cell
+      , cellSnake
       , cell
       ]
 
@@ -60,6 +60,16 @@ cell =
   el
         [ centerX, centerY,
           Background.color (rgb255 240 0 245)
+        , Border.rounded 3
+        , padding 30
+        ]
+        Element.none
+
+cellSnake : Element msg
+cellSnake = 
+  el
+        [ centerX, centerY,
+          Background.color (rgb255 0 250 0)
         , Border.rounded 3
         , padding 30
         ]
