@@ -18,7 +18,11 @@ main =
 
 -- MODEL
 
-type alias Model = List (List ())
+type alias Model =
+  { field: List (List ())
+  , currentHeadPosition: Int
+  }
+
 
 init : Model
 init =
@@ -44,15 +48,15 @@ view : Model -> Html Msg
 view model =
   layout
     []
-    fieldRow
+    (fieldRow model.currentHeadPosition)
 
-fieldRow : Element msg
-fieldRow = 
+fieldRow : Int -> Element msg
+fieldRow currentHeadPosition = 
   row [ width fill, height fill, spacing 1 ]
-      [ cell
-      , cell
-      , cellSnake
-      , cell
+      [ if currentHeadPosition == 0 cellSnake else cell
+      , if currentHeadPosition == 1 cellSnake else cell
+      , if currentHeadPosition == 2 cellSnake else cell
+      , if currentHeadPosition == 3 cellSnake else cell
       ]
 
 cell : Element msg
