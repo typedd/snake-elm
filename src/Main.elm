@@ -26,7 +26,9 @@ type alias Model =
 
 init : Model
 init =
-  [[],[],[]]
+  { field = [[],[],[]]
+  , currentHeadPosition = 0
+  }
 
 
 -- UPDATE
@@ -51,13 +53,14 @@ view model =
     (fieldRow model.currentHeadPosition)
 
 fieldRow : Int -> Element msg
-fieldRow currentHeadPosition = 
+fieldRow currentHeadPosition =
   row [ width fill, height fill, spacing 1 ]
-      [ if currentHeadPosition == 0 cellSnake else cell
-      , if currentHeadPosition == 1 cellSnake else cell
-      , if currentHeadPosition == 2 cellSnake else cell
-      , if currentHeadPosition == 3 cellSnake else cell
+      [ if currentHeadPosition == 0 then cellSnake else cell
+      , if currentHeadPosition == 1 then cellSnake else cell
+      , if currentHeadPosition == 2 then cellSnake else cell
+      , if currentHeadPosition == 3 then cellSnake else cell
       ]
+
 
 cell : Element msg
 cell = 
