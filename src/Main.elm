@@ -13,7 +13,7 @@ import Time
 
 
 main =
-  Browser.sandbox { init = init, update = update, view = view }
+  Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
 
 
 
@@ -25,11 +25,12 @@ type alias Model =
   }
 
 
-init : Model
-init =
-  { field = [[],[],[]]
+init : () -> (Model, Cmd Msg)
+init flag =
+  ( { field = [[],[],[]]
   , currentHeadPosition = 0
-  }
+  }, Cmd.none
+  )
 
 
 -- UPDATE
@@ -39,8 +40,8 @@ type Msg
   = Tick Time.Posix
 
 
-update : Msg -> Model -> Model
-update msg model = model
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model = (model, Cmd.none)
 
 
 
@@ -92,4 +93,5 @@ subscriptions model =
   Time.every 1000 Tick    
 
 -- every : Float -> (Posix -> msg) -> Sub msg
+-- 1000 : Float
 -- Tick : Posix -> msg
