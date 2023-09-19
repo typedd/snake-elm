@@ -5,6 +5,7 @@ import Element exposing (..)
 import Html exposing (Html)
 import Element.Background as Background
 import Element.Border as Border
+import Time
 
 
 
@@ -35,7 +36,7 @@ init =
 
 
 type Msg
-  = Model
+  = Tick Time.Posix
 
 
 update : Msg -> Model -> Model
@@ -81,3 +82,14 @@ cellSnake =
         , padding 30
         ]
         Element.none
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  Time.every 1000 Tick    
+
+-- every : Float -> (Posix -> msg) -> Sub msg
+-- Tick : Posix -> msg
