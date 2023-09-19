@@ -41,7 +41,12 @@ type Msg
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg model = (model, Cmd.none)
+update msg model =
+  case msg of
+      Tick _ -> (
+        {model | currentHeadPosition = model.currentHeadPosition + 1}
+        , Cmd.none
+        )
 
 
 
