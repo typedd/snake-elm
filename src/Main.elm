@@ -8,7 +8,6 @@ import Element.Border as Border
 import Time
 
 
-
 -- MAIN
 
 
@@ -37,20 +36,23 @@ init flag =
 
 
 type Msg
-  = Tick Time.Posix
+  = Tick Time.Posix 
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  let
-     newHeadPosition = if model.currentHeadPosition == 3 then -1 else model.currentHeadPosition
-
-  in
     case msg of
-      Tick _ -> (
-        {model | currentHeadPosition = newHeadPosition + 1}
+      Tick _ -> 
+        let
+          newHeadPosition = 
+            if model.currentHeadPosition == 3 then 0 
+            else model.currentHeadPosition + 1
+        in
+        ({model | 
+          currentHeadPosition = newHeadPosition}
         , Cmd.none
         )
+
 
 
 
