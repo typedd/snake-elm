@@ -6,7 +6,6 @@ import Html exposing (Html)
 import Element.Background as Background
 import Element.Border as Border
 import Time
-import Task 
 
 
 
@@ -25,41 +24,33 @@ main =
 
 -- MODEL
 
-type alias Model = 
-  { --field: List (List ())
-  --,  
-    x : Int
+type alias Model =
+  { field: List (List ())
+  , currentHeadPosition: Int
   }
 
 init : () -> (Model, Cmd Msg)
 init _ =
-  ( Model 1 
-  , Cmd.none
-  ) 
- 
- 
- -- [[],[],[]]
+  ( { field = [[],[],[]]
+    , currentHeadPosition = 3
+    }, Cmd.none
+  )
 
 
 -- UPDATE
 
 
 type Msg
-  = Tick Time.Posix | NewPosition (Int)
+  = Tick Time.Posix
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
-  case msg of
-    Tick ->
-      ( model.x + 1
-      , Cmd.none
-      )
-    NewPosition (x) ->
-      ( Model x
-      , Cmd.none
-      )
-
+    case msg of
+      Tick _ -> (
+        {model | currentHeadPosition = model.currentHeadPosition - 1}
+        , Cmd.none
+        )
 
 
 -- VIEW
@@ -69,16 +60,15 @@ view : Model -> Html Msg
 view model =
   layout
     []
-    (fieldRow model.x)
-            
+    (fieldRow model.currentHeadPosition)      
 
 fieldRow : Int -> Element msg
-fieldRow x = 
+fieldRow currentHeadPosition = 
   row [ width fill, height fill, spacing 1 ]
-      [ if x == 1 then cellSnake else cell
-      , if x == 2 then cellSnake else cell
-      , if x == 3 then cellSnake else cell
-      , if x == 4 then cellSnake else cell
+      [ if currentHeadPosition == 0 then cellSnake else cell
+      , if currentHeadPosition == 1 then cellSnake else cell
+      , if currentHeadPosition == 2 then cellSnake else cell
+      , if currentHeadPosition == 3 then cellSnake else cell
       ]
 
 cell : Element msg
