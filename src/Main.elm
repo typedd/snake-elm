@@ -46,9 +46,13 @@ type Msg
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
+  let
+     newHeadPosition = if model.currentHeadPosition == 0 then 4 else model.currentHeadPosition
+
+  in
     case msg of
       Tick _ -> (
-        {model | currentHeadPosition = model.currentHeadPosition - 1}
+        {model | currentHeadPosition = newHeadPosition - 1}
         , Cmd.none
         )
 
@@ -64,12 +68,13 @@ view model =
 
 fieldRow : Int -> Element msg
 fieldRow currentHeadPosition = 
-  row [ width fill, height fill, spacing 1 ]
+   row [ width fill, height fill, spacing 1 ]
       [ if currentHeadPosition == 0 then cellSnake else cell
       , if currentHeadPosition == 1 then cellSnake else cell
       , if currentHeadPosition == 2 then cellSnake else cell
       , if currentHeadPosition == 3 then cellSnake else cell
       ]
+
 
 cell : Element msg
 cell = 
@@ -90,6 +95,8 @@ cellSnake =
         , padding 30
         ]
         Element.none
+
+
 
 -- SUBSCRIPTIONS
 
