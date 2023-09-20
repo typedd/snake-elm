@@ -42,9 +42,13 @@ type Msg
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case msg of
+  let
+     newHeadPosition = if model.currentHeadPosition == 3 then -1 else model.currentHeadPosition
+
+  in
+    case msg of
       Tick _ -> (
-        {model | currentHeadPosition = model.currentHeadPosition + 1}
+        {model | currentHeadPosition = newHeadPosition + 1}
         , Cmd.none
         )
 
