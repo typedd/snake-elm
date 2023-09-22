@@ -5,6 +5,7 @@ import Element exposing (..)
 import Html exposing (Html)
 import Element.Background as Background
 import Element.Border as Border
+import Time
 
 
 
@@ -12,28 +13,40 @@ import Element.Border as Border
 
 
 main =
-  Browser.sandbox { init = init, update = update, view = view }
+  Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
 
 
 
 -- MODEL
 
-type alias Model = List (List ())
+type alias Model =
+  { field: List (List ())
+  , currentHeadPosition: Int
+  }
 
-init : Model
-init =
-  [[],[],[]]
+
+init : () -> (Model, Cmd Msg)
+init flag =
+  ( { field = [[],[],[]]
+  , currentHeadPosition = 0
+  }, Cmd.none
+  )
 
 
 -- UPDATE
 
 
 type Msg
-  = Model
+  = Tick Time.Posix
 
 
-update : Msg -> Model -> Model
-update msg model = model
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+  case msg of
+      Tick _ -> (
+        {model | currentHeadPosition = model.currentHeadPosition + 1}
+        , Cmd.none
+        )
 
 
 
@@ -44,16 +57,17 @@ view : Model -> Html Msg
 view model =
   layout
     []
-    fieldRow
+    (fieldRow model.currentHeadPosition)
 
-fieldRow : Element msg
-fieldRow = 
+fieldRow : Int -> Element msg
+fieldRow currentHeadPosition =
   row [ width fill, height fill, spacing 1 ]
-      [ cell
-      , cell
-      , cellSnake
-      , cell
+      [ if currentHeadPosition == 0 then cellSnake else cell
+      , if currentHeadPosition == 1 then cellSnake else cell
+      , if currentHeadPosition == 2 then cellSnake else cell
+      , if currentHeadPosition == 3 then cellSnake else cell
       ]
+
 
 cell : Element msg
 cell = 
@@ -74,3 +88,15 @@ cellSnake =
         , padding 30
         ]
         Element.none
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  Time.every 1000 Tick    
+
+-- every : Float -> (Posix -> msg) -> Sub msg
+-- 1000 : Float
+-- Tick : Posix -> msg
