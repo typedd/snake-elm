@@ -13,7 +13,11 @@ import Time
 
 
 main =
-  Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
+  Browser.element 
+    { init = init
+    , update = update
+    , view = view
+    , subscriptions = subscriptions }
 
 
 
@@ -60,19 +64,20 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
+  fieldDrow
+
+fieldDrow : Html msg
+fieldDrow = 
   layout
     []
-    (fieldRow model.currentHeadPosition)
+    <|
+      el [ centerX, centerY ]
+      <|
+        column [] (List.repeat 9 fieldRow)
 
-fieldRow : Int -> Element msg
-fieldRow currentHeadPosition =
-  row [ width fill, height fill, spacing 1 ]
-      [ if currentHeadPosition == 0 then cellSnake else cell
-      , if currentHeadPosition == 1 then cellSnake else cell
-      , if currentHeadPosition == 2 then cellSnake else cell
-      , if currentHeadPosition == 3 then cellSnake else cell
-      ]
-
+fieldRow :  Element msg
+fieldRow =
+  Element.row [] (List.repeat 9 cell)
 
 cell : Element msg
 cell = 
@@ -80,7 +85,7 @@ cell =
         [ centerX, centerY,
           Background.color (rgb255 240 0 245)
         , Border.rounded 3
-        , padding 30
+        , padding 20
         ]
         Element.none
 
