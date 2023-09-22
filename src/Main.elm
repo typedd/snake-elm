@@ -84,7 +84,7 @@ fieldRow xSnake ySnake yIndex =
 
 pointSnake : Int -> Int -> Int -> Int -> Element msg
 pointSnake xSnake ySnake xIndex yIndex =
-  if (xSnake == xIndex || ySnake == yIndex ) then cellSnake else cell
+  if (xSnake == xIndex && ySnake == yIndex ) then cellSnake else cell
 
 cell : Element msg
 cell = 
