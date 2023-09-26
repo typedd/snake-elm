@@ -13,7 +13,11 @@ import Time
 
 
 main =
-  Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
+  Browser.element 
+    { init = init
+    , update = update
+    , view = view
+    , subscriptions = subscriptions }
 
 
 
@@ -21,14 +25,16 @@ main =
 
 type alias Model =
   { field: List (List ())
-  , currentHeadPosition: Int
+  , xHeadPosition: Int
+  , yHeadPosition: Int
   }
 
 
 init : () -> (Model, Cmd Msg)
 init flag =
   ( { field = [[],[],[]]
-  , currentHeadPosition = 0
+  , xHeadPosition = 4
+  , yHeadPosition = 4
   }, Cmd.none
   )
 
@@ -46,10 +52,11 @@ update msg model =
       Tick _ -> 
         let
           newHeadPosition =
-            if model.currentHeadPosition == 3 then 0
-            else model.currentHeadPosition + 1
+            if model.yHeadPosition == 0 then 8
+            else model.yHeadPosition - 1
         in
-        ({model | currentHeadPosition = newHeadPosition}
+        ({model | yHeadPosition = newHeadPosition
+                  }
         , Cmd.none
         )
 
@@ -60,19 +67,24 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
+  fieldDrow model.xHeadPosition model.yHeadPosition
+
+fieldDrow : Int -> Int -> Html msg
+fieldDrow xSnake ySnake = 
   layout
     []
-    (fieldRow model.currentHeadPosition)
+    <|
+      el [ centerX, centerY ]
+      <|
+        column [] (List.indexedMap (\yIndex _ -> fieldRow xSnake ySnake yIndex) (List.repeat 9 cell))
 
-fieldRow : Int -> Element msg
-fieldRow currentHeadPosition =
-  row [ width fill, height fill, spacing 1 ]
-      [ if currentHeadPosition == 0 then cellSnake else cell
-      , if currentHeadPosition == 1 then cellSnake else cell
-      , if currentHeadPosition == 2 then cellSnake else cell
-      , if currentHeadPosition == 3 then cellSnake else cell
-      ]
+fieldRow : Int -> Int -> Int -> Element msg
+fieldRow xSnake ySnake yIndex =
+  Element.row [] (List.indexedMap (\xIndex _ -> pointSnake xSnake ySnake xIndex yIndex) (List.repeat 9 cell))
 
+pointSnake : Int -> Int -> Int -> Int -> Element msg
+pointSnake xSnake ySnake xIndex yIndex =
+  if (xSnake == xIndex && ySnake == yIndex ) then cellSnake else cell
 
 cell : Element msg
 cell = 
@@ -80,7 +92,7 @@ cell =
         [ centerX, centerY,
           Background.color (rgb255 240 0 245)
         , Border.rounded 3
-        , padding 30
+        , padding 20
         ]
         Element.none
 
@@ -90,7 +102,7 @@ cellSnake =
         [ centerX, centerY,
           Background.color (rgb255 0 250 0)
         , Border.rounded 3
-        , padding 30
+        , padding 20
         ]
         Element.none
 
