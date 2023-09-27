@@ -55,10 +55,10 @@ update msg model =
             if model.yHeadPosition == 0 then 8
             else model.yHeadPosition - 1
         in
-        ({model | yHeadPosition = newHeadPosition
-                  }
-        , Cmd.none
-        )
+          ({model | yHeadPosition = newHeadPosition
+                    }
+          , Cmd.none
+          )
 
 
 
