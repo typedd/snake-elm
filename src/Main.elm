@@ -6,6 +6,7 @@ import Html exposing (Html)
 import Element.Background as Background
 import Element.Border as Border
 import Time
+import Keyboard exposing (RawKey)
 
 
 
@@ -44,6 +45,8 @@ init _ =
 
 type Msg
   = Tick Time.Posix
+  | KeyDown RawKey
+  | KeyUp RawKey
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -55,10 +58,12 @@ update msg model =
             if model.yHeadPosition == 0 then 8
             else model.yHeadPosition - 1
         in
-        ({model | yHeadPosition = newHeadPosition
-                  }
-        , Cmd.none
-        )
+          ({model | yHeadPosition = newHeadPosition
+                    }
+          , Cmd.none
+          )
+      any_other_msg ->
+        Debug.log (Debug.toString any_other_msg) <| (model, Cmd.none)
 
 
 
@@ -112,4 +117,9 @@ cellSnake =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-  Time.every 1000 Tick    
+  Sub.batch
+    [ Time.every 1000 Tick
+    , Keyboard.downs KeyDown
+    , Keyboard.ups KeyUp
+    ]
+  
