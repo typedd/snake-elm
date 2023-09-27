@@ -31,7 +31,7 @@ type alias Model =
 
 
 init : () -> (Model, Cmd Msg)
-init flag =
+init _ =
   ( { field = [[],[],[]]
   , xHeadPosition = 4
   , yHeadPosition = 4
@@ -111,9 +111,5 @@ cellSnake =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
   Time.every 1000 Tick    
-
--- every : Float -> (Posix -> msg) -> Sub msg
--- 1000 : Float
--- Tick : Posix -> msg
