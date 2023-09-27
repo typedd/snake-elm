@@ -28,6 +28,7 @@ type alias Model =
   { field: List (List ())
   , xHeadPosition: Int
   , yHeadPosition: Int
+  , directHead: DirSnake
   }
 
 
@@ -36,12 +37,18 @@ init _ =
   ( { field = [[],[],[]]
   , xHeadPosition = 4
   , yHeadPosition = 4
+  , directHead = Up
   }, Cmd.none
   )
 
 
 -- UPDATE
 
+type DirSnake
+    = Up
+    | Down
+    --| Left
+    --| Right
 
 type Msg
   = Tick Time.Posix
@@ -55,15 +62,38 @@ update msg model =
       Tick _ -> 
         let
           newHeadPosition =
-            if model.yHeadPosition == 0 then 8
-            else model.yHeadPosition - 1
+            case model.directHead of 
+              Up ->
+                if model.yHeadPosition <= 0 then 8
+                else model.yHeadPosition - 1
+              Down ->
+                if model.yHeadPosition >= 8 then 0
+                else model.yHeadPosition + 1
         in
           ({model | yHeadPosition = newHeadPosition
                     }
           , Cmd.none
           )
-      any_other_msg ->
-        Debug.log (Debug.toString any_other_msg) <| (model, Cmd.none)
+      KeyDown _ -> 
+        ({model | directHead = Down
+                --, yHeadPosition = model.yHeadPosition + 1
+                    }
+          , Cmd.none
+
+        )
+      KeyUp _ -> 
+        ({model | directHead = Up
+                --, yHeadPosition = model.yHeadPosition - 1
+                    }
+          , Cmd.none
+
+        )  
+
+      --any_other_msg ->        
+        --Debug.log (Debug.toString any_other_msg) 
+          --<| 
+            --(model, 
+            --Cmd.none)
 
 
 
