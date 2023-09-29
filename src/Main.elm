@@ -70,31 +70,29 @@ update msg model =
                 if model.yHeadPosition >= 8 then 0
                 else model.yHeadPosition + 1
         in
-          ({model | yHeadPosition = newHeadPosition
-                    }
+          ({model | yHeadPosition = newHeadPosition}
           , Cmd.none
           )
-      KeyDown _ -> 
-        ({model | directHead = Down
-                --, yHeadPosition = model.yHeadPosition + 1
-                    }
-          , Cmd.none
-
-        )
+      KeyDown key -> 
+        let
+                newDirection =
+                    case Keyboard.rawValue key of
+                      "ArrowUp" ->
+                          Up
+                      "ArrowDown" ->
+                          Down
+                      _ ->
+                            model.directHead
+            in
+            (Debug.log (Debug.toString key) 
+              <|
+                { model | directHead = newDirection }, Cmd.none)
       KeyUp _ -> 
-        ({model | directHead = Up
-                --, yHeadPosition = model.yHeadPosition - 1
-                    }
-          , Cmd.none
-
-        )  
-
-      --any_other_msg ->        
-        --Debug.log (Debug.toString any_other_msg) 
-          --<| 
-            --(model, 
-            --Cmd.none)
-
+        (model, Cmd.none)
+     -- any_other_msg ->        
+     --   Debug.log (Debug.toString any_other_msg) 
+     --     <| 
+       --     (model, Cmd.none)
 
 
 -- VIEW
