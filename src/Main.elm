@@ -26,8 +26,9 @@ main =
 
 type alias Model =
   { field: List (List ())
-  , xHeadPosition: Int
-  , yHeadPosition: Int
+  --, xHeadPosition: Int
+  --, yHeadPosition: Int
+  , headPosition : {x : Int, y : Int}
   , directHead: DirSnake
   }
 
@@ -35,9 +36,8 @@ type alias Model =
 init : () -> (Model, Cmd Msg)
 init _ =
   ( { field = [[],[],[]]
-  , xHeadPosition = 4
-  , yHeadPosition = 4
-  , directHead = Up
+  , headPosition = {x = 4, y = 4}
+  , directHead = UP
   }, Cmd.none
   )
 
@@ -45,10 +45,10 @@ init _ =
 -- UPDATE
 
 type DirSnake
-    = Up
-    | Down
-    --| Left
-    --| Right
+    = UP
+    | DOWN
+    | LEFT
+    | RIGHT
 
 type Msg
   = Tick Time.Posix
@@ -63,14 +63,22 @@ update msg model =
         let
           newHeadPosition =
             case model.directHead of 
-              Up ->
-                if model.yHeadPosition <= 0 then 8
-                else model.yHeadPosition - 1
-              Down ->
-                if model.yHeadPosition >= 8 then 0
-                else model.yHeadPosition + 1
+              UP ->
+                if model.headPosition.y <= 0 then {x = model.headPosition.x, y = 8}
+                else {x = model.headPosition.x, y = model.headPosition.y - 1}
+              DOWN ->
+                if model.headPosition.y >= 8 then {x = model.headPosition.x, y = 0}
+                else {x = model.headPosition.x, y = model.headPosition.y + 1}
+              LEFT ->
+                if model.headPosition.x <= 0 then {x = 8, y = model.headPosition.y}
+                else {x = model.headPosition.x - 1, y = model.headPosition.y}
+              RIGHT ->
+                if model.headPosition.x >= 8 then {x = 0, y = model.headPosition.y}
+                else {x = model.headPosition.x + 1, y = model.headPosition.y} 
         in
-          ({model | yHeadPosition = newHeadPosition}
+          ({model | headPosition = newHeadPosition 
+          --,         xHeadPosition = newHeadPosition
+          }
           , Cmd.none
           )
       KeyDown key -> 
@@ -78,9 +86,13 @@ update msg model =
                 newDirection =
                     case Keyboard.rawValue key of
                       "ArrowUp" ->
-                          Up
+                          UP
                       "ArrowDown" ->
-                          Down
+                          DOWN
+                      "ArrowLeft" ->
+                          LEFT
+                      "ArrowRight" ->
+                          RIGHT
                       _ ->
                             model.directHead
             in
@@ -100,7 +112,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-  fieldDrow model.xHeadPosition model.yHeadPosition
+  fieldDrow model.headPosition.x model.headPosition.y
 
 fieldDrow : Int -> Int -> Html msg
 fieldDrow xSnake ySnake = 
