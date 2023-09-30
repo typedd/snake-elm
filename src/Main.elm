@@ -6,6 +6,7 @@ import Html exposing (Html)
 import Element.Background as Background
 import Element.Border as Border
 import Time
+import Keyboard exposing (RawKey)
 
 
 
@@ -25,25 +26,34 @@ main =
 
 type alias Model =
   { field: List (List ())
-  , xHeadPosition: Int
-  , yHeadPosition: Int
+  --, xHeadPosition: Int
+  --, yHeadPosition: Int
+  , headPosition : {x : Int, y : Int}
+  , directHead: DirSnake
   }
 
 
 init : () -> (Model, Cmd Msg)
 init _ =
   ( { field = [[],[],[]]
-  , xHeadPosition = 4
-  , yHeadPosition = 4
+  , headPosition = {x = 4, y = 4}
+  , directHead = UP
   }, Cmd.none
   )
 
 
 -- UPDATE
 
+type DirSnake
+    = UP
+    | DOWN
+    | LEFT
+    | RIGHT
 
 type Msg
   = Tick Time.Posix
+  | KeyDown RawKey
+  | KeyUp RawKey
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -52,14 +62,49 @@ update msg model =
       Tick _ -> 
         let
           newHeadPosition =
-            if model.yHeadPosition == 0 then 8
-            else model.yHeadPosition - 1
+            case model.directHead of 
+              UP ->
+                if model.headPosition.y <= 0 then {x = model.headPosition.x, y = 8}
+                else {x = model.headPosition.x, y = model.headPosition.y - 1}
+              DOWN ->
+                if model.headPosition.y >= 8 then {x = model.headPosition.x, y = 0}
+                else {x = model.headPosition.x, y = model.headPosition.y + 1}
+              LEFT ->
+                if model.headPosition.x <= 0 then {x = 8, y = model.headPosition.y}
+                else {x = model.headPosition.x - 1, y = model.headPosition.y}
+              RIGHT ->
+                if model.headPosition.x >= 8 then {x = 0, y = model.headPosition.y}
+                else {x = model.headPosition.x + 1, y = model.headPosition.y} 
         in
-          ({model | yHeadPosition = newHeadPosition
-                    }
+          ({model | headPosition = newHeadPosition 
+          --,         xHeadPosition = newHeadPosition
+          }
           , Cmd.none
           )
-
+      KeyDown key -> 
+        let
+                newDirection =
+                    case Keyboard.rawValue key of
+                      "ArrowUp" ->
+                          UP
+                      "ArrowDown" ->
+                          DOWN
+                      "ArrowLeft" ->
+                          LEFT
+                      "ArrowRight" ->
+                          RIGHT
+                      _ ->
+                            model.directHead
+            in
+            (Debug.log (Debug.toString key) 
+              <|
+                { model | directHead = newDirection }, Cmd.none)
+      KeyUp _ -> 
+        (model, Cmd.none)
+     -- any_other_msg ->        
+     --   Debug.log (Debug.toString any_other_msg) 
+     --     <| 
+       --     (model, Cmd.none)
 
 
 -- VIEW
@@ -67,7 +112,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-  fieldDrow model.xHeadPosition model.yHeadPosition
+  fieldDrow model.headPosition.x model.headPosition.y
 
 fieldDrow : Int -> Int -> Html msg
 fieldDrow xSnake ySnake = 
@@ -112,4 +157,9 @@ cellSnake =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-  Time.every 1000 Tick    
+  Sub.batch
+    [ Time.every 1000 Tick
+    , Keyboard.downs KeyDown
+    , Keyboard.ups KeyUp
+    ]
+  
