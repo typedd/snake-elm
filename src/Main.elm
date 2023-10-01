@@ -44,7 +44,7 @@ init _ =
 
 -- UPDATE
 
-type DirSnake
+type SnakeDirection
     = UP
     | DOWN
     | LEFT
@@ -114,7 +114,7 @@ view : Model -> Html Msg
 view model =
   fieldDrow model.headPosition.x model.headPosition.y
 
-fieldDrow : Int -> Int -> Html msg
+field : Int -> Int -> Html msg
 fieldDrow xSnake ySnake = 
   layout
     []
