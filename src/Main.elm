@@ -158,8 +158,7 @@ cellSnake =
 subscriptions : Model -> Sub Msg
 subscriptions _ =
   Sub.batch
-    [ Time.every 1000 Tick
+    [ Time.every 500 Tick
     , Keyboard.downs KeyDown
     , Keyboard.ups KeyUp
     ]
-  
