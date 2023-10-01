@@ -8,10 +8,7 @@ import Element.Border as Border
 import Time
 import Keyboard exposing (RawKey)
 
-
-
 -- MAIN
-
 
 main =
   Browser.element 
@@ -20,27 +17,20 @@ main =
     , view = view
     , subscriptions = subscriptions }
 
-
-
 -- MODEL
 
 type alias Model =
-  { field: List (List ())
-  --, xHeadPosition: Int
-  --, yHeadPosition: Int
-  , headPosition : {x : Int, y : Int}
+  { headPosition : {x : Int, y : Int}
   , directHead: DirSnake
   }
 
 
 init : () -> (Model, Cmd Msg)
 init _ =
-  ( { field = [[],[],[]]
-  , headPosition = {x = 4, y = 4}
+  ({headPosition = {x = 4, y = 4}
   , directHead = UP
   }, Cmd.none
   )
-
 
 -- UPDATE
 
@@ -55,14 +45,13 @@ type Msg
   | KeyDown RawKey
   | KeyUp RawKey
 
-
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-      Tick _ -> 
+      Tick _ ->
         let
           newHeadPosition =
-            case model.directHead of 
+            case model.directHead of
               UP ->
                 if model.headPosition.y <= 0 then {x = model.headPosition.x, y = 8}
                 else {x = model.headPosition.x, y = model.headPosition.y - 1}
@@ -74,14 +63,12 @@ update msg model =
                 else {x = model.headPosition.x - 1, y = model.headPosition.y}
               RIGHT ->
                 if model.headPosition.x >= 8 then {x = 0, y = model.headPosition.y}
-                else {x = model.headPosition.x + 1, y = model.headPosition.y} 
+                else {x = model.headPosition.x + 1, y = model.headPosition.y}
         in
-          ({model | headPosition = newHeadPosition 
-          --,         xHeadPosition = newHeadPosition
-          }
+          ({model | headPosition = newHeadPosition}
           , Cmd.none
           )
-      KeyDown key -> 
+      KeyDown key ->
         let
                 newDirection =
                     case Keyboard.rawValue key of
@@ -96,26 +83,20 @@ update msg model =
                       _ ->
                             model.directHead
             in
-            (Debug.log (Debug.toString key) 
+            (Debug.log (Debug.toString key)
               <|
                 { model | directHead = newDirection }, Cmd.none)
-      KeyUp _ -> 
+      KeyUp _ ->
         (model, Cmd.none)
-     -- any_other_msg ->        
-     --   Debug.log (Debug.toString any_other_msg) 
-     --     <| 
-       --     (model, Cmd.none)
-
 
 -- VIEW
-
 
 view : Model -> Html Msg
 view model =
   fieldDrow model.headPosition.x model.headPosition.y
 
 fieldDrow : Int -> Int -> Html msg
-fieldDrow xSnake ySnake = 
+fieldDrow xSnake ySnake =
   layout
     []
     <|
@@ -151,9 +132,7 @@ cellSnake =
         ]
         Element.none
 
-
 -- SUBSCRIPTIONS
-
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
