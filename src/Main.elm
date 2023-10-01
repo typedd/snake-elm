@@ -86,26 +86,26 @@ update msg model =
 
       KeyDown key ->
         let
-                newDirection =
-                    case Keyboard.rawValue key of
-                      "ArrowUp" ->
-                          UP
+          newDirection =
+            case Keyboard.rawValue key of
+              "ArrowUp" ->
+                UP
 
-                      "ArrowDown" ->
-                          DOWN
+              "ArrowDown" ->
+                DOWN
 
-                      "ArrowLeft" ->
-                          LEFT
+              "ArrowLeft" ->
+                LEFT
 
-                      "ArrowRight" ->
-                          RIGHT
+              "ArrowRight" ->
+                RIGHT
 
-                      _ ->
-                            model.directHead
-            in
-            (Debug.log (Debug.toString key)
-              <|
-                { model | directHead = newDirection }, Cmd.none)
+              _ ->
+                model.directHead
+        in
+          (Debug.log (Debug.toString key)
+            <|
+              { model | directHead = newDirection }, Cmd.none)
 
       KeyUp _ ->
         (model, Cmd.none)
@@ -144,23 +144,23 @@ pointSnake xSnake ySnake xIndex yIndex =
 cell : Element msg
 cell = 
   el
-      [ centerX, centerY,
-        Background.color (rgb255 240 0 245)
-        , Border.rounded 3
-        , padding 20
-      ]
-      Element.none
+    [ centerX, centerY
+    , Background.color (rgb255 240 0 245)
+    , Border.rounded 3
+    , padding 20
+    ]
+    Element.none
 
 
 cellSnake : Element msg
 cellSnake = 
   el
-      [ centerX, centerY,
-        Background.color (rgb255 0 250 0)
-      , Border.rounded 3
-      , padding 20
-      ]
-      Element.none
+    [ centerX, centerY
+    , Background.color (rgb255 0 250 0)
+    , Border.rounded 3
+    , padding 20
+    ]
+    Element.none
 
 
 
