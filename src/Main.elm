@@ -168,6 +168,7 @@ cellSnake =
     ]
     Element.none
 
+
 cellHeadSnake : Element msg
 cellHeadSnake = 
   el
