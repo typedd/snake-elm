@@ -7,7 +7,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Time
 import Keyboard exposing (RawKey)
-
+import Random exposing (..)
 
 
 -- MAIN
@@ -24,16 +24,26 @@ main =
 
 -- MODEL
 
+type alias Berry = 
+  { x : Int
+  , y : Int 
+  }
 
 type alias Model =
   { snake: List { x : Int, y : Int }
+  , berries: List Berry
   , directHead: DirSnake
   }
 
+initBerries : Int -> List Berry
+initBerries countBerries =
+    [{x = 2, y = 7}, {x = 6, y = 4}, {x = 0, y = 0}]
+    
 
 init : () -> (Model, Cmd Msg)
 init _ =
   ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]
+  , berries = initBerries 3
   , directHead = UP
   }, Cmd.none
   )
@@ -119,32 +129,34 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-  fieldDrow model.snake
+  fieldDrow model.snake model.berries
 
 
-fieldDrow : List { x : Int, y : Int } -> Html msg
-fieldDrow snake = 
+fieldDrow : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Html msg
+fieldDrow snake berries = 
   layout
     []
     <|
     el [ centerX, centerY ]
       <|
-      column [] (List.indexedMap (\yIndex _ -> fieldRow snake yIndex) (List.repeat 9 cell))
+      column [] (List.indexedMap (\yIndex _ -> fieldRow snake berries yIndex) (List.repeat 9 cell))
 
 
-fieldRow : List { x : Int, y : Int } -> Int -> Element msg
-fieldRow snake yIndex =
-  Element.row [] (List.indexedMap (\xIndex _ -> pointSnake snake xIndex yIndex) (List.repeat 9 cell))
+fieldRow : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Element msg
+fieldRow snake berries yIndex =
+  Element.row [] (List.indexedMap (\xIndex _ -> pointSnake snake berries xIndex yIndex) (List.repeat 9 cell))
 
 
-pointSnake : List { x : Int, y : Int } -> Int -> Int -> Element msg
-pointSnake snake xIndex yIndex =
+pointSnake : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Int -> Element msg
+pointSnake snake berries xIndex yIndex =
   if List.head snake == Just { x = xIndex, y = yIndex } then
     cellHeadSnake
   else if List.any (\pos -> pos.x == xIndex && pos.y == yIndex) (List.drop 1 snake) then
-    cellSnake
-  else
-    cell
+    cellSnake 
+    else if List.any (\pos -> pos.x == xIndex && pos.y == yIndex) berries then 
+      cellBerry
+    else
+      cell
 
 
 cell : Element msg
@@ -178,17 +190,26 @@ cellHeadSnake =
     ]
     Element.none
 
+cellBerry : Element msg
+cellBerry = 
+  el
+    [ centerX, centerY
+    , Background.color (rgb255 250 0 0)
+    , Border.rounded 3
+    , padding 20
+    ]
+    Element.none
 
 isHeadLeaveTopLeft : Model -> Bool
 isHeadLeaveTopLeft model =
     case List.head model.snake of
-        Just head -> ((head.y > 0) && (head.x > 0))
+        Just head -> ((head.y >= 0) && (head.x >= 0))
         Nothing -> False
 
 isHeadLeaveBottomRight : Model -> Bool
 isHeadLeaveBottomRight model =
     case List.head model.snake of
-        Just head -> ((head.y < 8) && (head.x < 8))
+        Just head -> ((head.y <= 8) && (head.x <= 8))
         Nothing -> False
 
 
