@@ -203,13 +203,13 @@ cellBerry =
 isHeadLeaveTopLeft : Model -> Bool
 isHeadLeaveTopLeft model =
     case List.head model.snake of
-        Just head -> ((head.y > 0) && (head.x > 0))
+        Just head -> ((head.y >= 0) && (head.x >= 0))
         Nothing -> False
 
 isHeadLeaveBottomRight : Model -> Bool
 isHeadLeaveBottomRight model =
     case List.head model.snake of
-        Just head -> ((head.y < 8) && (head.x < 8))
+        Just head -> ((head.y <= 8) && (head.x <= 8))
         Nothing -> False
 
 
