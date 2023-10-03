@@ -140,40 +140,18 @@ fieldRow snake yIndex =
 pointSnake : List { x : Int, y : Int } -> Int -> Int -> Element msg
 pointSnake snake xIndex yIndex =
   if List.head snake == Just { x = xIndex, y = yIndex } then
-    cellHeadSnake
+    cell 0 100 0
   else if List.any (\pos -> pos.x == xIndex && pos.y == yIndex) (List.drop 1 snake) then
-    cellSnake
+    cell 0 250 0
   else
-    cell
+    cell 240 0 245
 
 
-cell : Element msg
-cell = 
+cell : Int -> Int -> Int -> Element msg
+cell r g b= 
   el
     [ centerX, centerY
-    , Background.color (rgb255 240 0 245)
-    , Border.rounded 3
-    , padding 20
-    ]
-    Element.none
-
-
-cellSnake : Element msg
-cellSnake = 
-  el
-    [ centerX, centerY
-    , Background.color (rgb255 0 250 0)
-    , Border.rounded 3
-    , padding 20
-    ]
-    Element.none
-
-
-cellHeadSnake : Element msg
-cellHeadSnake = 
-  el
-    [ centerX, centerY
-    , Background.color (rgb255 0 100 0)
+    , Background.color (rgb255 r g b)
     , Border.rounded 3
     , padding 20
     ]
