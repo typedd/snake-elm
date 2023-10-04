@@ -46,7 +46,7 @@ init _ =
   ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]
   , berries = initBerries 3
   , directHead = UP
-  }, Cmd.none
+  }, Cmd.none --???
   )
 
 
@@ -94,6 +94,9 @@ update msg model =
 
           newSnake =
             headPosition :: List.take (List.length model.snake - 1) model.snake
+
+          
+
         in
           ({ model | snake = newSnake }, Cmd.none)
 
