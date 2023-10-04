@@ -75,16 +75,16 @@ update msg model =
           (dx, dy) =
             case model.directHead of
               UP -> 
-                (0, if (isHeadLeaveTopLeft model) then -1 else 8)
+                (0, if (isHeadLeaveTop model) then -1 else 8)
 
               DOWN -> 
-                (0, if (isHeadLeaveBottomRight model) then 1 else -8)
+                (0, if (isHeadLeaveBottom model) then 1 else -8)
 
               LEFT -> 
-                (if (isHeadLeaveTopLeft model) then -1 else 8, 0)
+                (if (isHeadLeaveLeft model) then -1 else 8, 0)
 
               RIGHT -> 
-                (if (isHeadLeaveBottomRight model) then 1 else -8, 0)
+                (if (isHeadLeaveRight model) then 1 else -8, 0)
 
           headPosition =
             case List.head model.snake of
@@ -98,19 +98,20 @@ update msg model =
 
       KeyDown key ->
         let
+          lastDirection = model.directHead
           newDirection =
             case Keyboard.rawValue key of
               "ArrowUp" ->
-                UP
+                if lastDirection == DOWN then DOWN else UP
 
               "ArrowDown" ->
-                DOWN
+                if lastDirection == UP then UP else DOWN
 
               "ArrowLeft" ->
-                LEFT
+                if lastDirection == RIGHT then RIGHT else LEFT
 
               "ArrowRight" ->
-                RIGHT
+                if lastDirection == LEFT then LEFT else RIGHT
 
               _ ->
                 model.directHead
@@ -200,18 +201,29 @@ cellBerry =
     ]
     Element.none
 
-isHeadLeaveTopLeft : Model -> Bool
-isHeadLeaveTopLeft model =
+isHeadLeaveTop : Model -> Bool
+isHeadLeaveTop model =
     case List.head model.snake of
-        Just head -> ((head.y >= 0) && (head.x >= 0))
+        Just head -> (head.y > 0)
         Nothing -> False
 
-isHeadLeaveBottomRight : Model -> Bool
-isHeadLeaveBottomRight model =
+isHeadLeaveLeft : Model -> Bool
+isHeadLeaveLeft model =
     case List.head model.snake of
-        Just head -> ((head.y <= 8) && (head.x <= 8))
+        Just head -> (head.x > 0)
         Nothing -> False
 
+isHeadLeaveBottom : Model -> Bool
+isHeadLeaveBottom model =
+    case List.head model.snake of
+        Just head -> (head.y < 8)
+        Nothing -> False
+
+isHeadLeaveRight : Model -> Bool
+isHeadLeaveRight model =
+    case List.head model.snake of
+        Just head -> (head.x < 8)
+        Nothing -> False
 
 -- SUBSCRIPTIONS
 
