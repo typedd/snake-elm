@@ -35,21 +35,32 @@ type alias Model =
   , directHead: DirSnake
   }
 
-initBerries : Int -> List Berry
+
+initBerries : Int -> Random.Generator (List Berry)
 initBerries countBerries =
-    [{x = 2, y = 7}, {x = 6, y = 4}, {x = 0, y = 0}]
-  --  List.repeat countBerries {x = 0, y = 0}
+  Random.list countBerries positionGenerator
 
 
 init : () -> (Model, Cmd Msg)
 init _ =
-  ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]
-  , berries = initBerries 3
-  , directHead = UP
-  }, Cmd.none --???
+  let
+    generateRandomBerries : Cmd Msg
+    generateRandomBerries =
+      Random.generate NewBerry positionGenerator
+  in
+  ( { snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, { x = 4, y = 7 }]
+    , berries = []
+    , directHead = UP
+    }
+  , generateRandomBerries --Cmd.none --
   )
 
 
+positionGenerator : Random.Generator Berry
+positionGenerator =
+  Random.map2 Berry
+    (Random.int 0 8)
+    (Random.int 0 8)
 
 -- UPDATE
 
@@ -94,9 +105,7 @@ update msg model =
 
           newSnake =
             headPosition :: List.take (List.length model.snake - 1) model.snake
-
-          
-
+        
         in
           ({ model | snake = newSnake }, Cmd.none)
 
@@ -129,15 +138,6 @@ update msg model =
       NewBerry berry -> 
         ({model | berries = berry :: model.berries }, Cmd.none)  
 
-getPosition : Random.Generator (Int, Int) -> Berry
-getPosition generator =
-  let
-    (x, newGenerator) =
-      Random.generate Berry generator
-
-  
-  in
-  { x = x, y = y }
 
 
 -- VIEW
