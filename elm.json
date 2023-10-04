@@ -11,7 +11,8 @@
             "elm/html": "1.0.0",
             "elm/time": "1.0.0",
             "mdgriffith/elm-ui": "1.1.8",
-            "ohanhi/keyboard": "2.0.1"
+            "ohanhi/keyboard": "2.0.1",
+            "elm/random": "1.0.0"
         },
         "indirect": {
             "elm/json": "1.1.3",
