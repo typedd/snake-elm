@@ -40,21 +40,6 @@ initBerries countBerries =
     [{x = 2, y = 7}, {x = 6, y = 4}, {x = 0, y = 0}]
   --  List.repeat countBerries {x = 0, y = 0}
 
---randomPosition = Random.pair (Random.int 0 8) (Random.int 0 8)
-
---initBerries : Int -> List Berry
---initBerries countBerries =
---    List.repeat countBerries positionGenerator
-
-generateRandomBerry : Berry
-generateRandomBerry =
-    Random.generate NewBerry positionGenerator
-
-positionGenerator : Random.Generator Berry
-positionGenerator =
-  Random.map2 Berry
-    (Random.int 0 8)
-    (Random.int 0 8)
 
 init : () -> (Model, Cmd Msg)
 init _ =
@@ -137,9 +122,19 @@ update msg model =
 
       KeyUp _ ->
         (model, Cmd.none)
+      
       NewBerry berry -> 
         ({model | berries = berry :: model.berries }, Cmd.none)  
 
+getPosition : Random.Generator (Int, Int) -> Berry
+getPosition generator =
+  let
+    (x, newGenerator) =
+      Random.generate Berry generator
+
+  
+  in
+  { x = x, y = y }
 
 
 -- VIEW
