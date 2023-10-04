@@ -24,31 +24,31 @@ main =
 
 -- MODEL
 
+
 type alias Model =
-  { field: List (List ())
-  --, xHeadPosition: Int
-  --, yHeadPosition: Int
-  , headPosition : {x : Int, y : Int}
+  { headPosition : {x : Int, y : Int}
   , directHead: DirSnake
   }
 
 
 init : () -> (Model, Cmd Msg)
 init _ =
-  ( { field = [[],[],[]]
-  , headPosition = {x = 4, y = 4}
+  ({headPosition = {x = 4, y = 4}
   , directHead = UP
   }, Cmd.none
   )
 
 
+
 -- UPDATE
+
 
 type SnakeDirection
     = UP
     | DOWN
     | LEFT
     | RIGHT
+
 
 type Msg
   = Tick Time.Posix
@@ -59,52 +59,57 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-      Tick _ -> 
+      Tick _ ->
         let
           newHeadPosition =
-            case model.directHead of 
+            case model.directHead of
               UP ->
                 if model.headPosition.y <= 0 then {x = model.headPosition.x, y = 8}
                 else {x = model.headPosition.x, y = model.headPosition.y - 1}
+
               DOWN ->
                 if model.headPosition.y >= 8 then {x = model.headPosition.x, y = 0}
                 else {x = model.headPosition.x, y = model.headPosition.y + 1}
+
               LEFT ->
                 if model.headPosition.x <= 0 then {x = 8, y = model.headPosition.y}
                 else {x = model.headPosition.x - 1, y = model.headPosition.y}
+
               RIGHT ->
                 if model.headPosition.x >= 8 then {x = 0, y = model.headPosition.y}
-                else {x = model.headPosition.x + 1, y = model.headPosition.y} 
+                else {x = model.headPosition.x + 1, y = model.headPosition.y}
+
         in
-          ({model | headPosition = newHeadPosition 
-          --,         xHeadPosition = newHeadPosition
-          }
+          ({model | headPosition = newHeadPosition}
           , Cmd.none
           )
-      KeyDown key -> 
+
+      KeyDown key ->
         let
-                newDirection =
-                    case Keyboard.rawValue key of
-                      "ArrowUp" ->
-                          UP
-                      "ArrowDown" ->
-                          DOWN
-                      "ArrowLeft" ->
-                          LEFT
-                      "ArrowRight" ->
-                          RIGHT
-                      _ ->
-                            model.directHead
-            in
-            (Debug.log (Debug.toString key) 
-              <|
-                { model | directHead = newDirection }, Cmd.none)
-      KeyUp _ -> 
+          newDirection =
+            case Keyboard.rawValue key of
+              "ArrowUp" ->
+                UP
+
+              "ArrowDown" ->
+                DOWN
+
+              "ArrowLeft" ->
+                LEFT
+
+              "ArrowRight" ->
+                RIGHT
+
+              _ ->
+                model.directHead
+        in
+          (Debug.log (Debug.toString key)
+            <|
+              { model | directHead = newDirection }, Cmd.none)
+
+      KeyUp _ ->
         (model, Cmd.none)
-     -- any_other_msg ->        
-     --   Debug.log (Debug.toString any_other_msg) 
-     --     <| 
-       --     (model, Cmd.none)
+
 
 
 -- VIEW
@@ -115,7 +120,7 @@ view model =
   fieldDrow model.headPosition.x model.headPosition.y
 
 field : Int -> Int -> Html msg
-fieldDrow xSnake ySnake = 
+fieldDrow xSnake ySnake =
   layout
     []
     <|
@@ -123,33 +128,39 @@ fieldDrow xSnake ySnake =
       <|
         column [] (List.indexedMap (\yIndex _ -> fieldRow xSnake ySnake yIndex) (List.repeat 9 cell))
 
+
 fieldRow : Int -> Int -> Int -> Element msg
 fieldRow xSnake ySnake yIndex =
   Element.row [] (List.indexedMap (\xIndex _ -> pointSnake xSnake ySnake xIndex yIndex) (List.repeat 9 cell))
 
+
 pointSnake : Int -> Int -> Int -> Int -> Element msg
 pointSnake xSnake ySnake xIndex yIndex =
-  if (xSnake == xIndex && ySnake == yIndex ) then cellSnake else cell
+  if (xSnake == xIndex && ySnake == yIndex ) then cellSnake 
+  else cell
+
 
 cell : Element msg
 cell = 
   el
-        [ centerX, centerY,
-          Background.color (rgb255 240 0 245)
-        , Border.rounded 3
-        , padding 20
-        ]
-        Element.none
+    [ centerX, centerY
+    , Background.color (rgb255 240 0 245)
+    , Border.rounded 3
+    , padding 20
+    ]
+    Element.none
+
 
 cellSnake : Element msg
 cellSnake = 
   el
-        [ centerX, centerY,
-          Background.color (rgb255 0 250 0)
-        , Border.rounded 3
-        , padding 20
-        ]
-        Element.none
+    [ centerX, centerY
+    , Background.color (rgb255 0 250 0)
+    , Border.rounded 3
+    , padding 20
+    ]
+    Element.none
+
 
 
 -- SUBSCRIPTIONS
