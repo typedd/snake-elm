@@ -36,31 +36,32 @@ type alias Model =
   }
 
 
-initBerries : Int -> Random.Generator (List Berry)
-initBerries countBerries =
-  Random.list countBerries positionGenerator
-
-
-init : () -> (Model, Cmd Msg)
-init _ =
-  let
-    generateRandomBerries : Cmd Msg
-    generateRandomBerries =
-      Random.generate NewBerry positionGenerator
-  in
-  ( { snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, { x = 4, y = 7 }]
-    , berries = []
-    , directHead = UP
-    }
-  , generateRandomBerries --Cmd.none --
-  )
-
-
-positionGenerator : Random.Generator Berry
-positionGenerator =
+randomGenerator : Random.Generator Berry
+randomGenerator =
   Random.map2 Berry
     (Random.int 0 8)
     (Random.int 0 8)
+
+initBerries : Int -> Random.Generator (List Berry)
+initBerries countBerries =
+  Random.int 2 countBerries
+    |> Random.andThen (\num -> Random.list num randomGenerator)
+
+
+generateBerry : -> Cmd Msg
+generateBerry =
+    generate NewBerry randomGenerator
+
+init : () -> (Model, Cmd Msg)
+init _ =
+  ( { snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, { x = 4, y = 7 }]
+    , berries = initBerries 3
+    , directHead = UP
+    }
+  , generateBerry --Cmd.none --
+  )
+
+
 
 -- UPDATE
 
@@ -105,9 +106,14 @@ update msg model =
 
           newSnake =
             headPosition :: List.take (List.length model.snake - 1) model.snake
-        
+          ateBerry =
+            List.any (\berry -> berry.x == headPosition.x && berry.y == headPosition.y) model.berries
+
+          --newBerry = if ateBerry then NewBerry {x = 0, y = 0} else model.berries 
+      
         in
-          ({ model | snake = newSnake }, Cmd.none)
+          ({ model | snake = newSnake
+          }, Cmd.none)
 
       KeyDown key ->
         let
@@ -138,7 +144,10 @@ update msg model =
       NewBerry berry -> 
         ({model | berries = berry :: model.berries }, Cmd.none)  
 
-
+--удаляем съеденную ягоду из списка
+removeBerry : List Berry -> Int -> Int -> List Berry
+removeBerry berries xToRemove yToRemove =
+  List.filter (\berry -> berry.x /= xToRemove || berry.y /= yToRemove) berries
 
 -- VIEW
 
