@@ -54,6 +54,7 @@ type Msg
   = Tick Time.Posix
   | KeyDown RawKey
   | KeyUp RawKey
+  | Rnd (List (Int, Int)) -- Rnd : List (Int, Int) -> Msg
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -75,11 +76,13 @@ update msg model =
               RIGHT ->
                 if model.headPosition.x >= 8 then {x = 0, y = model.headPosition.y}
                 else {x = model.headPosition.x + 1, y = model.headPosition.y} 
+           cmd : Cmd Msg
+           cmd = Random.generate Rnd (Random.list 3 (Random.pair (Random.int 0 5) (Random.int 0 5)))
         in
           ({model | headPosition = newHeadPosition 
           --,         xHeadPosition = newHeadPosition
           }
-          , Cmd.none
+          , cmd
           )
       KeyDown key -> 
         let
@@ -101,6 +104,12 @@ update msg model =
                 { model | directHead = newDirection }, Cmd.none)
       KeyUp _ -> 
         (model, Cmd.none)
+      Rnd listCoord ->
+          let
+            'coords : List (Int, Int)
+            'coords = listCoord
+          in
+             listCoord : List (Int, Int)
      -- any_other_msg ->        
      --   Debug.log (Debug.toString any_other_msg) 
      --     <| 
