@@ -35,20 +35,22 @@ type alias Model =
   , directHead: DirSnake
   }
 
-initBerries : Int -> List Berry
-initBerries countBerries =
-    [{x = 2, y = 7}, {x = 6, y = 4}, {x = 0, y = 0}]
+--initBerries : Int -> List Berry
+--initBerries countBerries =
+--    [{x = 2, y = 7}, {x = 6, y = 4}, {x = 0, y = 0}]
     
 
 init : () -> (Model, Cmd Msg)
 init _ =
   ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]
-  , berries = initBerries 3
+  , berries = []
   , directHead = UP
   }, Cmd.none
   )
 
-
+randomGenerator : Random.Generator (Int, Int)
+randomGenerator =
+  Random.pair (Random.int 0 8) (Random.int 0 8)
 
 -- UPDATE
 
@@ -64,6 +66,7 @@ type Msg
   = Tick Time.Posix
   | KeyDown RawKey
   | KeyUp RawKey
+  | RandomBerry (List (Int, Int))
 
 
 
@@ -89,12 +92,22 @@ update msg model =
           headPosition =
             case List.head model.snake of
               Just { x, y } -> { x = x + dx, y = y + dy }
-              Nothing -> { x = 0, y = 0 }
+              Nothing -> { x = 0, y = 0 } 
+
+          ateBerry =
+            List.any (\berry -> berry.x == headPosition.x && berry.y == headPosition.y) model.berries  
+
+          newBerries = removeBerry model.berries headPosition.x headPosition.y --if ateBerry then removeBerry model.berries 0 0 else model.berries
 
           newSnake =
-            headPosition :: List.take (List.length model.snake - 1) model.snake
+            if ateBerry then (headPosition :: List.take (List.length model.snake) model.snake) 
+            else (headPosition :: List.take (List.length model.snake - 1) model.snake)
+
+          cmd : Cmd Msg
+          cmd = if List.length newBerries < 3 then (Random.generate RandomBerry (Random.list 3 randomGenerator))
+            else Cmd.none -- (Random.pair (Random.int 0 5) (Random.int 0 5)))  
         in
-          ({ model | snake = newSnake }, Cmd.none)
+          ({ model | snake = newSnake }, cmd)
 
       KeyDown key ->
         let
@@ -123,7 +136,19 @@ update msg model =
       KeyUp _ ->
         (model, Cmd.none)
 
+      RandomBerry listCoord ->
+        let
+          coords : List (Int, Int)
+          coords = listCoord
+          listBerries : List Berry
+          listBerries = List.map (\(x, y) -> { x = x, y = y }) coords
+        in
+          --listCoord : List (Int, Int)
+          ({ model | berries = listBerries }, Cmd.none)
 
+removeBerry : List Berry -> Int -> Int -> List Berry
+removeBerry berries xToRemove yToRemove =
+  List.filter (\berry -> berry.x /= xToRemove || berry.y /= yToRemove) berries
 
 -- VIEW
 
