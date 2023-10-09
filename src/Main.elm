@@ -104,8 +104,17 @@ update msg model =
             else (headPosition :: List.take (List.length model.snake - 1) model.snake)
 
           cmd : Cmd Msg
-          cmd = if List.length newBerries < 3 then (Random.generate RandomBerry (Random.list 3 randomGenerator))
-            else Cmd.none -- (Random.pair (Random.int 0 5) (Random.int 0 5)))  
+          cmd = 
+            case List.length newBerries of 
+              0 -> 
+                Random.generate RandomBerry (Random.list 3 randomGenerator)
+
+              2 -> 
+                Random.generate RandomBerry (Random.list 1 randomGenerator)
+            
+              _ -> 
+                Cmd.none
+
         in
           ({ model | snake = newSnake }, cmd)
 
@@ -140,10 +149,15 @@ update msg model =
         let
           coords : List (Int, Int)
           coords = listCoord
+
+          headPosition =
+            case List.head model.snake of
+              Just { x, y } -> { x = x, y = y }
+              Nothing -> { x = 0, y = 0 } 
+
           listBerries : List Berry
-          listBerries = List.map (\(x, y) -> { x = x, y = y }) coords
+          listBerries = removeBerry model.berries headPosition.x headPosition.y ++ List.map (\(x, y) -> { x = x, y = y }) coords
         in
-          --listCoord : List (Int, Int)
           ({ model | berries = listBerries }, Cmd.none)
 
 removeBerry : List Berry -> Int -> Int -> List Berry
