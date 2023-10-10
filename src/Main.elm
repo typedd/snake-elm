@@ -157,12 +157,21 @@ update msg model =
 
           listBerries : List Berry
           listBerries = removeBerry model.berries headPosition.x headPosition.y ++ List.map (\(x, y) -> { x = x, y = y }) coords
+
         in
           ({ model | berries = listBerries }, Cmd.none)
 
+
+--удаляем съеденную ягоду из списка ягод на поле
 removeBerry : List Berry -> Int -> Int -> List Berry
 removeBerry berries xToRemove yToRemove =
   List.filter (\berry -> berry.x /= xToRemove || berry.y /= yToRemove) berries
+
+--проверяем попадает ли ягода на змею
+isBerryOnSnake : List { x : Int, y : Int } -> List Berry -> Bool
+isBerryOnSnake snake berries =
+  List.any (\snakeSegment -> List.any (\berry -> berry.x == snakeSegment.x && berry.y == snakeSegment.y) berries) snake
+
 
 -- VIEW
 
