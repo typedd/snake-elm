@@ -5,6 +5,7 @@ import Element exposing (..)
 import Html exposing (Html)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Font as Font
 import Time
 import Keyboard exposing (RawKey)
 import Random exposing (..)
@@ -51,7 +52,6 @@ init _ =
 
 
 -- UPDATE
-
 
 type DirSnake
     = UP
@@ -130,7 +130,40 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-  fieldDrow model.snake model.berries
+ -- fieldDrow model.snake model.berries
+  gameStart
+
+
+gameStart : Html msg
+gameStart = 
+  layout
+    []
+    <|
+    el [ centerX, centerY ]
+      <|
+      column [spacing 10] [title, subTitle]
+
+title : Element msg
+title =
+  el [ Background.color (rgb255 0 255 0)
+    , Element.paddingXY 50 2
+    , Font.bold
+    , Font.size 80
+    ]
+    (text "SNAKE ELM")
+
+subTitle : Element msg
+subTitle =
+  el [ centerX, centerY
+    , Background.color (rgb255 0 0 255)
+    , Element.paddingXY 30 5
+    , Font.bold
+    , Font.size 40
+    , Border.rounded 3
+    ]
+    (text "Press any key")
+      
+      
 
 
 fieldDrow : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Html msg
