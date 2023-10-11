@@ -34,6 +34,7 @@ type alias Model =
   { snake: List { x : Int, y : Int }
   , berries: List Berry
   , directHead: DirSnake
+  , starterPage: Bool
   }
 
 initBerries : Int -> List Berry
@@ -46,6 +47,7 @@ init _ =
   ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]
   , berries = initBerries 3
   , directHead = UP
+  , starterPage = True
   }, Cmd.none
   )
 
@@ -129,9 +131,8 @@ update msg model =
 
 
 view : Model -> Html Msg
-view model =
- -- fieldDrow model.snake model.berries
-  gameStart
+view model = 
+  if model.starterPage == True then gameStart else fieldDrow model.snake model.berries
 
 
 gameStart : Html msg
@@ -163,8 +164,6 @@ subTitle =
     ]
     (text "Press any key")
       
-      
-
 
 fieldDrow : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Html msg
 fieldDrow snake berries = 
