@@ -117,7 +117,7 @@ update msg model =
                 model.directHead
         in
           (Debug.log (Debug.toString key)
-           <|
+            <|
               { model | directHead = newDirection }, Cmd.none)
 
       KeyUp _ ->
@@ -129,7 +129,7 @@ update msg model =
 
 
 view : Model -> Html Msg
-view model = 
+view model =
   if model.starterPage == True then gameStart else fieldDrow model.snake model.berries
 
 
@@ -161,7 +161,7 @@ subTitle =
     , Border.rounded 3
     ]
     (text "Press any key")
-      
+
 
 fieldDrow : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Html msg
 fieldDrow snake berries = 
@@ -259,9 +259,9 @@ isHeadLeaveRight model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
+subscriptions model =
   Sub.batch
-    [ Time.every 500 Tick
+    [ if model.starterPage == False then Time.every 500 Tick else Sub.none
     , Keyboard.downs KeyDown
     , Keyboard.ups KeyUp
     ]
