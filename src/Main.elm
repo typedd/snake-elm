@@ -121,7 +121,7 @@ update msg model =
               { model | directHead = newDirection }, Cmd.none)
 
       KeyUp _ ->
-        ({model | starterPage = False}, Cmd.none)
+        ({ model | starterPage = False }, Cmd.none)
 
 
 
