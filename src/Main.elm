@@ -7,7 +7,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Time
-import Keyboard exposing (RawKey)
+import Keyboard exposing (RawKey, Key)
 import Random exposing (..)
 
 
@@ -67,8 +67,6 @@ type Msg
   | KeyDown RawKey
   | KeyUp RawKey
 
-
-
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
@@ -119,11 +117,11 @@ update msg model =
                 model.directHead
         in
           (Debug.log (Debug.toString key)
-            <|
+           <|
               { model | directHead = newDirection }, Cmd.none)
 
       KeyUp _ ->
-        (model, Cmd.none)
+        ({model | starterPage = False}, Cmd.none)
 
 
 
