@@ -105,15 +105,8 @@ update msg model =
 
           cmd : Cmd Msg
           cmd = 
-            case List.length newBerries of 
-              0 -> 
-                Random.generate RandomBerry (Random.list 3 randomGenerator)
-
-              2 -> 
-                Random.generate RandomBerry (Random.list 1 randomGenerator)
-            
-              _ -> 
-                Cmd.none
+            if (List.length newBerries < 3) then Random.generate RandomBerry (Random.list 81 randomGenerator)
+            else Cmd.none
 
         in
           ({ model | snake = newSnake }, cmd)
@@ -158,8 +151,10 @@ update msg model =
           listBerries : List Berry
           listBerries = removeBerry model.berries headPosition.x headPosition.y ++ List.map (\(x, y) -> { x = x, y = y }) coords
 
+          newlistBerries = List.take 3 (List.filter (\berry -> not (isBerryOnSnake berry model.snake)) listBerries)
+
         in
-          ({ model | berries = listBerries }, Cmd.none)
+          ({ model | berries = newlistBerries }, Cmd.none)
 
 
 --удаляем съеденную ягоду из списка ягод на поле
@@ -168,10 +163,9 @@ removeBerry berries xToRemove yToRemove =
   List.filter (\berry -> berry.x /= xToRemove || berry.y /= yToRemove) berries
 
 --проверяем попадает ли ягода на змею
-isBerryOnSnake : List { x : Int, y : Int } -> List Berry -> Bool
-isBerryOnSnake snake berries =
-  List.any (\snakeSegment -> List.any (\berry -> berry.x == snakeSegment.x && berry.y == snakeSegment.y) berries) snake
-
+isBerryOnSnake : Berry -> List { x : Int, y : Int } -> Bool
+isBerryOnSnake berry snake =
+  List.any (\segment -> segment.x == berry.x && segment.y == berry.y) snake
 
 -- VIEW
 
