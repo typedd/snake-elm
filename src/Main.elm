@@ -5,8 +5,9 @@ import Element exposing (..)
 import Html exposing (Html)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Font as Font
 import Time
-import Keyboard exposing (RawKey)
+import Keyboard exposing (RawKey, Key)
 import Random exposing (..)
 
 
@@ -33,6 +34,7 @@ type alias Model =
   { snake: List { x : Int, y : Int }
   , berries: List Berry
   , directHead: DirSnake
+  , starterPage: Bool
   }
 
 --initBerries : Int -> List Berry
@@ -45,6 +47,7 @@ init _ =
   ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]
   , berries = []
   , directHead = UP
+  , starterPage = True
   }, Cmd.none
   )
 
@@ -53,7 +56,6 @@ randomGenerator =
   Random.pair (Random.int 0 8) (Random.int 0 8)
 
 -- UPDATE
-
 
 type DirSnake
     = UP
@@ -67,8 +69,6 @@ type Msg
   | KeyDown RawKey
   | KeyUp RawKey
   | RandomBerry (List (Int, Int))
-
-
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -109,7 +109,7 @@ update msg model =
             else Cmd.none
 
         in
-          ({ model | snake = newSnake }, cmd)
+          if model.starterPage == True then (model, Cmd.none) else ({ model | snake = newSnake }, Cmd.none)
 
       KeyDown key ->
         let
@@ -136,7 +136,7 @@ update msg model =
               { model | directHead = newDirection }, Cmd.none)
 
       KeyUp _ ->
-        (model, Cmd.none)
+        ({ model | starterPage = False }, Cmd.none)
 
       RandomBerry listCoord ->
         let
@@ -172,7 +172,37 @@ isBerryOnSnake berry snake =
 
 view : Model -> Html Msg
 view model =
-  fieldDrow model.snake model.berries
+  if model.starterPage == True then gameStart else fieldDrow model.snake model.berries
+
+
+gameStart : Html msg
+gameStart = 
+  layout
+    []
+    <|
+    el [ centerX, centerY ]
+      <|
+      column [spacing 10] [title, subTitle]
+
+title : Element msg
+title =
+  el [ Background.color (rgb255 0 255 0)
+    , Element.paddingXY 50 2
+    , Font.bold
+    , Font.size 80
+    ]
+    (text "SNAKE ELM")
+
+subTitle : Element msg
+subTitle =
+  el [ centerX, centerY
+    , Background.color (rgb255 0 0 255)
+    , Element.paddingXY 30 5
+    , Font.bold
+    , Font.size 40
+    , Border.rounded 3
+    ]
+    (text "Press any key")
 
 
 fieldDrow : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Html msg
@@ -271,9 +301,9 @@ isHeadLeaveRight model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
+subscriptions model =
   Sub.batch
-    [ Time.every 500 Tick
+    [ if model.starterPage == False then Time.every 500 Tick else Sub.none
     , Keyboard.downs KeyDown
     , Keyboard.ups KeyUp
     ]
