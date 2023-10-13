@@ -105,7 +105,7 @@ update msg model =
 
           cmd : Cmd Msg
           cmd = 
-            if (List.length newBerries < 3) then Random.generate RandomBerry (Random.list 81 randomGenerator)
+            if (List.length newBerries < 4) then Random.generate RandomBerry (Random.list 81 randomGenerator)
             else Cmd.none
 
         in
