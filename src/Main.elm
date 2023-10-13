@@ -94,7 +94,7 @@ update msg model =
           newSnake =
             headPosition :: List.take (List.length model.snake - 1) model.snake
         in
-          ({ model | snake = newSnake }, Cmd.none)
+          if model.starterPage == True then (model, Cmd.none) else ({ model | snake = newSnake }, Cmd.none)
 
       KeyDown key ->
         let
