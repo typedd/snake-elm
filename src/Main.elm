@@ -97,10 +97,10 @@ update msg model =
           ateBerry =
             List.any (\berry -> berry.x == headPosition.x && berry.y == headPosition.y) model.berries  
 
-          newBerries = removeBerry model.berries headPosition.x headPosition.y --if ateBerry then removeBerry model.berries 0 0 else model.berries
+          --newBerries = removeBerry model.berries headPosition.x headPosition.y
 
           newSnake =
-            if ateBerry then (headPosition :: List.take (List.length model.snake) model.snake) 
+            if ateBerry then (headPosition :: List.take (List.length model.snake) model.snake)
             else (headPosition :: List.take (List.length model.snake - 1) model.snake)
 
           cmd : Cmd Msg
@@ -109,7 +109,10 @@ update msg model =
             else Cmd.none
 
         in
-          if model.starterPage == True then (model, Cmd.none) else ({ model | snake = newSnake }, Cmd.none)
+          if model.starterPage == True then (model, cmd) 
+          else (
+            { model | snake = newSnake }
+            , cmd)
 
       KeyDown key ->
         let
