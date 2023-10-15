@@ -37,21 +37,23 @@ type alias Model =
   , starterPage: Bool
   }
 
-initBerries : Int -> List Berry
-initBerries countBerries =
-    [{x = 2, y = 7}, {x = 6, y = 4}, {x = 0, y = 0}]
+--initBerries : Int -> List Berry
+--initBerries countBerries =
+--    [{x = 2, y = 7}, {x = 6, y = 4}, {x = 0, y = 0}]
     
 
 init : () -> (Model, Cmd Msg)
 init _ =
   ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]
-  , berries = initBerries 3
+  , berries = []
   , directHead = UP
   , starterPage = True
   }, Cmd.none
   )
 
-
+randomGenerator : Random.Generator (Int, Int)
+randomGenerator =
+  Random.pair (Random.int 0 8) (Random.int 0 8)
 
 -- UPDATE
 
@@ -66,6 +68,7 @@ type Msg
   = Tick Time.Posix
   | KeyDown RawKey
   | KeyUp RawKey
+  | RandomBerry (List (Int, Int))
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -89,10 +92,22 @@ update msg model =
           headPosition =
             case List.head model.snake of
               Just { x, y } -> { x = x + dx, y = y + dy }
-              Nothing -> { x = 0, y = 0 }
+              Nothing -> { x = 0, y = 0 } 
+
+          ateBerry =
+            List.any (\berry -> berry.x == headPosition.x && berry.y == headPosition.y) model.berries  
+
+          newBerries = removeBerry model.berries headPosition.x headPosition.y --if ateBerry then removeBerry model.berries 0 0 else model.berries
 
           newSnake =
-            headPosition :: List.take (List.length model.snake - 1) model.snake
+            if ateBerry then (headPosition :: List.take (List.length model.snake) model.snake) 
+            else (headPosition :: List.take (List.length model.snake - 1) model.snake)
+
+          cmd : Cmd Msg
+          cmd = 
+            if (List.length newBerries < 4) then Random.generate RandomBerry (Random.list 81 randomGenerator)
+            else Cmd.none
+
         in
           if model.starterPage == True then (model, Cmd.none) else ({ model | snake = newSnake }, Cmd.none)
 
@@ -123,7 +138,34 @@ update msg model =
       KeyUp _ ->
         ({ model | starterPage = False }, Cmd.none)
 
+      RandomBerry listCoord ->
+        let
+          coords : List (Int, Int)
+          coords = listCoord
 
+          headPosition =
+            case List.head model.snake of
+              Just { x, y } -> { x = x, y = y }
+              Nothing -> { x = 0, y = 0 } 
+
+          listBerries : List Berry
+          listBerries = removeBerry model.berries headPosition.x headPosition.y ++ List.map (\(x, y) -> { x = x, y = y }) coords
+
+          newlistBerries = List.take 3 (List.filter (\berry -> not (isBerryOnSnake berry model.snake)) listBerries)
+
+        in
+          ({ model | berries = newlistBerries }, Cmd.none)
+
+
+--удаляем съеденную ягоду из списка ягод на поле
+removeBerry : List Berry -> Int -> Int -> List Berry
+removeBerry berries xToRemove yToRemove =
+  List.filter (\berry -> berry.x /= xToRemove || berry.y /= yToRemove) berries
+
+--проверяем попадает ли ягода на змею
+isBerryOnSnake : Berry -> List { x : Int, y : Int } -> Bool
+isBerryOnSnake berry snake =
+  List.any (\segment -> segment.x == berry.x && segment.y == berry.y) snake
 
 -- VIEW
 
