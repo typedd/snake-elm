@@ -97,10 +97,17 @@ update msg model =
           ateBerry =
             List.any (\berry -> berry.x == headPosition.x && berry.y == headPosition.y) model.berries  
 
+<<<<<<< HEAD
           --newBerries = removeBerry model.berries headPosition.x headPosition.y
 
           newSnake =
             if ateBerry then (headPosition :: List.take (List.length model.snake) model.snake)
+=======
+          newBerries = removeBerry model.berries headPosition.x headPosition.y --if ateBerry then removeBerry model.berries 0 0 else model.berries
+
+          newSnake =
+            if ateBerry then (headPosition :: List.take (List.length model.snake) model.snake) 
+>>>>>>> develop
             else (headPosition :: List.take (List.length model.snake - 1) model.snake)
 
           cmd : Cmd Msg
