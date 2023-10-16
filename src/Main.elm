@@ -145,7 +145,10 @@ update msg model =
               { model | directHead = newDirection }, Cmd.none)
 
       KeyUp _ ->
-        ({ model | starterPage = False }, Cmd.none)
+        if model.gameOverPage == True then 
+          ({ model | starterPage = True }, Cmd.none)
+        else
+          ({ model | starterPage = False }, Cmd.none)
 
       RandomBerry listCoord ->
         let
@@ -238,7 +241,7 @@ gameOver =
     <|
     el [ centerX, centerY ]
       <|
-      column [spacing 10] [titleGameOver]
+      column [spacing 10] [titleGameOver, subTitle]
 
 
 titleGameOver : Element msg
