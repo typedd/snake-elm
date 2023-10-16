@@ -35,11 +35,12 @@ type alias Model =
   , berries: List Berry
   , directHead: DirSnake
   , starterPage: Bool
+  , gameOverPage: Bool
   }
 
---initBerries : Int -> List Berry
---initBerries countBerries =
---    [{x = 2, y = 7}, {x = 6, y = 4}, {x = 0, y = 0}]
+--initBerries :  List Berry
+--initBerries =
+--  Random.generate RandomBerry (Random.list 81 randomGenerator)
     
 
 init : () -> (Model, Cmd Msg)
@@ -48,6 +49,7 @@ init _ =
   , berries = []
   , directHead = UP
   , starterPage = True
+  , gameOverPage = False
   }, Cmd.none
   )
 
@@ -78,16 +80,16 @@ update msg model =
           (dx, dy) =
             case model.directHead of
               UP -> 
-                (0, if (isHeadLeaveTop model) then -1 else 8)
+                (0, -1)
 
               DOWN -> 
-                (0, if (isHeadLeaveBottom model) then 1 else -8)
+                (0, 1)
 
               LEFT -> 
-                (if (isHeadLeaveLeft model) then -1 else 8, 0)
+                (-1, 0)
 
               RIGHT -> 
-                (if (isHeadLeaveRight model) then 1 else -8, 0)
+                (1, 0)
 
           headPosition =
             case List.head model.snake of
@@ -97,7 +99,7 @@ update msg model =
           ateBerry =
             List.any (\berry -> berry.x == headPosition.x && berry.y == headPosition.y) model.berries  
 
-          newBerries = removeBerry model.berries headPosition.x headPosition.y --if ateBerry then removeBerry model.berries 0 0 else model.berries
+          newBerries = removeBerry model.berries headPosition.x headPosition.y
 
           newSnake =
             if ateBerry then (headPosition :: List.take (List.length model.snake) model.snake)
@@ -109,7 +111,11 @@ update msg model =
             else Cmd.none
 
         in
-          if model.starterPage == True then (model, cmd) 
+          if model.starterPage == True then (model, Cmd.none) 
+          else 
+            if isGameOver model.snake then (
+              { model | gameOverPage = True }
+              , Cmd.none)
           else (
             { model | snake = newSnake }
             , cmd)
@@ -146,13 +152,8 @@ update msg model =
           coords : List (Int, Int)
           coords = listCoord
 
-          headPosition =
-            case List.head model.snake of
-              Just { x, y } -> { x = x, y = y }
-              Nothing -> { x = 0, y = 0 } 
-
           listBerries : List Berry
-          listBerries = removeBerry model.berries headPosition.x headPosition.y ++ List.map (\(x, y) -> { x = x, y = y }) coords
+          listBerries = model.berries ++ List.map (\(x, y) -> { x = x, y = y }) coords
 
           newlistBerries = List.take 3 (List.filter (\berry -> not (isBerryOnSnake berry model.snake)) listBerries)
 
@@ -170,12 +171,32 @@ isBerryOnSnake : Berry -> List { x : Int, y : Int } -> Bool
 isBerryOnSnake berry snake =
   List.any (\segment -> segment.x == berry.x && segment.y == berry.y) snake
 
+--проверяем врезалась ли змейка в стену или съела себя 
+isGameOver : List { x : Int, y : Int } -> Bool
+isGameOver snake =
+    case List.head snake of
+        Just head ->
+          if (head.x < 0 || head.x > 8 || head.y < 0 || head.y > 8) then True 
+          else 
+            if List.any (\segment -> segment.x == head.x && segment.y == head.y) (List.drop 1 snake) then
+              True
+            else
+              False
+        Nothing ->
+            True
+
+
+
 -- VIEW
 
 
 view : Model -> Html Msg
 view model =
-  if model.starterPage == True then gameStart else fieldDrow model.snake model.berries
+  if model.starterPage == True then gameStart 
+  else 
+    if model.gameOverPage == True then gameOver
+    else 
+      fieldDrow model.snake model.berries
 
 
 gameStart : Html msg
@@ -187,6 +208,7 @@ gameStart =
       <|
       column [spacing 10] [title, subTitle]
 
+
 title : Element msg
 title =
   el [ Background.color (rgb255 0 255 0)
@@ -195,6 +217,7 @@ title =
     , Font.size 80
     ]
     (text "SNAKE ELM")
+
 
 subTitle : Element msg
 subTitle =
@@ -206,6 +229,27 @@ subTitle =
     , Border.rounded 3
     ]
     (text "Press any key")
+
+
+gameOver : Html msg
+gameOver = 
+  layout
+    []
+    <|
+    el [ centerX, centerY ]
+      <|
+      column [spacing 10] [titleGameOver]
+
+
+titleGameOver : Element msg
+titleGameOver =
+  el [ Background.color (rgb255 255 0 0)
+    , Element.paddingXY 50 2
+    , Font.bold
+    , Font.color (rgb255 255 255 255)
+    , Font.size 80
+    ]
+    (text "GAME OVER")
 
 
 fieldDrow : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Html msg
@@ -276,29 +320,7 @@ cellBerry =
     ]
     Element.none
 
-isHeadLeaveTop : Model -> Bool
-isHeadLeaveTop model =
-    case List.head model.snake of
-        Just head -> (head.y > 0)
-        Nothing -> False
 
-isHeadLeaveLeft : Model -> Bool
-isHeadLeaveLeft model =
-    case List.head model.snake of
-        Just head -> (head.x > 0)
-        Nothing -> False
-
-isHeadLeaveBottom : Model -> Bool
-isHeadLeaveBottom model =
-    case List.head model.snake of
-        Just head -> (head.y < 8)
-        Nothing -> False
-
-isHeadLeaveRight : Model -> Bool
-isHeadLeaveRight model =
-    case List.head model.snake of
-        Just head -> (head.x < 8)
-        Nothing -> False
 
 -- SUBSCRIPTIONS
 
