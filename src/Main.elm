@@ -148,8 +148,8 @@ update msg model =
               { model | directHead = newDirection }, Cmd.none)
 
       KeyUp _ ->
-        if model.gameOverPage == True then --переменная не меняется!!! изменить
-          ({ model | starterPage = True }, Cmd.none)
+        if model.gameOverPage == True then
+          ({ model | starterPage = True, gameOverPage = False }, Cmd.none)
         else
           ({ model | starterPage = False }, Cmd.none)
 
