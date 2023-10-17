@@ -45,12 +45,15 @@ type alias Model =
 
 init : () -> (Model, Cmd Msg)
 init _ =
-  ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]
-  , berries = []
-  , directHead = UP
-  , starterPage = True
-  , gameOverPage = False
-  }, Cmd.none
+  let
+    randomCmd = Random.generate RandomBerry (Random.list 10 randomGenerator)
+  in
+    ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]
+    , berries = []
+    , directHead = UP
+    , starterPage = True
+    , gameOverPage = False
+  }, randomCmd
   )
 
 randomGenerator : Random.Generator (Int, Int)
@@ -145,7 +148,7 @@ update msg model =
               { model | directHead = newDirection }, Cmd.none)
 
       KeyUp _ ->
-        if model.gameOverPage == True then 
+        if model.gameOverPage == True then --переменная не меняется!!! изменить
           ({ model | starterPage = True }, Cmd.none)
         else
           ({ model | starterPage = False }, Cmd.none)
