@@ -149,7 +149,7 @@ update msg model =
 
       KeyUp _ ->
         if model.gameOverPage == True then
-          ({ model | starterPage = True, gameOverPage = False }, Cmd.none)
+          ({ model | starterPage = True, gameOverPage = False,  berries = [], directHead = UP, snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]}, Cmd.none)
         else
           ({ model | starterPage = False }, Cmd.none)
 
