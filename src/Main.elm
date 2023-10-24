@@ -25,17 +25,18 @@ main =
 
 -- MODEL
 
-type alias Berry = 
+type alias Berry =
   { x : Int
-  , y : Int 
+  , y : Int
   }
 
 type alias Model =
   { snake: List { x : Int, y : Int }
   , berries: List Berry
-  , directHead: DirSnake
+  , directHead: DirectionSnake
   , starterPage: Bool
   , gameOverPage: Bool
+  , score: Int
   }
 
 --initBerries :  List Berry
@@ -53,6 +54,7 @@ init _ =
     , directHead = UP
     , starterPage = True
     , gameOverPage = False
+    , score = 0
   }, randomCmd
   )
 
@@ -62,7 +64,7 @@ randomGenerator =
 
 -- UPDATE
 
-type DirSnake
+type DirectionSnake
     = UP
     | DOWN
     | LEFT
@@ -82,17 +84,13 @@ update msg model =
         let
           (dx, dy) =
             case model.directHead of
-              UP -> 
-                (0, -1)
+              UP -> (0, -1)
 
-              DOWN -> 
-                (0, 1)
+              DOWN -> (0, 1)
 
-              LEFT -> 
-                (-1, 0)
+              LEFT -> (-1, 0)
 
-              RIGHT -> 
-                (1, 0)
+              RIGHT -> (1, 0)
 
           headPosition =
             case List.head model.snake of
@@ -100,7 +98,10 @@ update msg model =
               Nothing -> { x = 0, y = 0 } 
 
           ateBerry =
-            List.any (\berry -> berry.x == headPosition.x && berry.y == headPosition.y) model.berries  
+            List.any (\berry -> berry.x == headPosition.x && berry.y == headPosition.y) model.berries
+
+          newScore =
+            if ateBerry then model.score + 1 else model.score  -- Увеличиваем счет при съедании ягоды  
 
           newBerries = removeBerry model.berries headPosition.x headPosition.y
 
@@ -120,7 +121,7 @@ update msg model =
               { model | gameOverPage = True }
               , Cmd.none)
           else (
-            { model | snake = newSnake }
+            { model | snake = newSnake, score = newScore }
             , cmd)
 
       KeyDown key ->
@@ -149,7 +150,18 @@ update msg model =
 
       KeyUp _ ->
         if model.gameOverPage == True then
-          ({ model | starterPage = True, gameOverPage = False }, Cmd.none)
+          let
+            randomCmd = Random.generate RandomBerry (Random.list 10 randomGenerator)
+          in
+            ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]
+            , berries = []
+            , directHead = UP
+            , starterPage = True
+            , gameOverPage = False
+            , score = 0
+            }, randomCmd
+            )
+            -- ({ model | starterPage = True, gameOverPage = False }, Cmd.none)
         else
           ({ model | starterPage = False }, Cmd.none)
 
@@ -203,6 +215,9 @@ view model =
     if model.gameOverPage == True then gameOver
     else 
       fieldDrow model.snake model.berries
+
+
+--titleScore : 
 
 
 gameStart : Html msg
