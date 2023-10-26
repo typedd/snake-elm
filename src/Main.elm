@@ -161,7 +161,6 @@ update msg model =
             , score = 0
             }, randomCmd
             )
-            -- ({ model | starterPage = True, gameOverPage = False }, Cmd.none)
         else
           ({ model | starterPage = False }, Cmd.none)
 
@@ -212,21 +211,21 @@ view : Model -> Html Msg
 view model =
   if model.starterPage == True then gameStart 
   else 
-    if model.gameOverPage == True then gameOver
+    if model.gameOverPage == True then gameOver model.score
     else 
       fieldDraw model.snake model.berries
 
 
 --titleScore : 
-scoreElement : Element msg
-scoreElement =
+scoreElement : Int -> Element msg
+scoreElement score =
     el [ centerX, centerY
       , Background.color (rgb255 0 255 0)
       , Element.paddingXY 50 2
       , Font.bold
       , Font.size 50
       ]
-    (text ("SCORE: " ++ (String.fromInt 100)))
+    (text ("SCORE: " ++ (String.fromInt score)))
 
 
 gameStart : Html msg
@@ -262,14 +261,14 @@ subTitle =
     (text "Press any key")
 
 
-gameOver : Html msg
-gameOver = 
+gameOver : Int -> Html msg
+gameOver score = 
   layout
     []
     <|
     el [ centerX, centerY ]
       <|
-      column [spacing 10] [titleGameOver, scoreElement, subTitle]
+      column [spacing 10] [titleGameOver, scoreElement score, subTitle]
 
 
 titleGameOver : Element msg
