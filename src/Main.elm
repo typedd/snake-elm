@@ -161,7 +161,6 @@ update msg model =
             , score = 0
             }, randomCmd
             )
-            -- ({ model | starterPage = True, gameOverPage = False }, Cmd.none)
         else
           ({ model | starterPage = False }, Cmd.none)
 
@@ -212,12 +211,20 @@ view : Model -> Html Msg
 view model =
   if model.starterPage == True then gameStart 
   else 
-    if model.gameOverPage == True then gameOver
+    if model.gameOverPage == True then gameOver model.score
     else 
-      fieldDrow model.snake model.berries
+      fieldDraw model.snake model.berries model.score
 
 
 --titleScore : 
+scoreElement : Int -> Element msg
+scoreElement score =
+    el [ centerX, centerY
+      , Element.paddingXY 50 2
+      , Font.bold
+      , Font.size 30
+      ]
+    (text ("SCORE: " ++ (String.fromInt score)))
 
 
 gameStart : Html msg
@@ -247,19 +254,20 @@ subTitle =
     , Element.paddingXY 30 5
     , Font.bold
     , Font.size 40
-    , Border.rounded 3
+    , Font.color (rgb255 255 255 255)
+    , Border.rounded 5
     ]
     (text "Press any key")
 
 
-gameOver : Html msg
-gameOver = 
+gameOver : Int -> Html msg
+gameOver score = 
   layout
     []
     <|
     el [ centerX, centerY ]
       <|
-      column [spacing 10] [titleGameOver, subTitle]
+      column [spacing 10] [titleGameOver, scoreElement score, subTitle]
 
 
 titleGameOver : Element msg
@@ -268,19 +276,23 @@ titleGameOver =
     , Element.paddingXY 50 2
     , Font.bold
     , Font.color (rgb255 255 255 255)
-    , Font.size 80
+    , Font.size 70
     ]
     (text "GAME OVER")
 
 
-fieldDrow : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Html msg
-fieldDrow snake berries = 
+fieldDraw : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Html msg
+fieldDraw snake berries score = 
   layout
     []
     <|
     el [ centerX, centerY ]
       <|
-      column [] (List.indexedMap (\yIndex _ -> fieldRow snake berries yIndex) (List.repeat 9 cell))
+      row [spacing 20] 
+        [ scoreElement score,
+          column []
+            (List.indexedMap (\yIndex _ -> fieldRow snake berries yIndex) (List.repeat 9 cell))
+        ]
 
 
 fieldRow : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Element msg
