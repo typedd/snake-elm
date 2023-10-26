@@ -213,17 +213,16 @@ view model =
   else 
     if model.gameOverPage == True then gameOver model.score
     else 
-      fieldDraw model.snake model.berries
+      fieldDraw model.snake model.berries model.score
 
 
 --titleScore : 
 scoreElement : Int -> Element msg
 scoreElement score =
     el [ centerX, centerY
-      , Background.color (rgb255 0 255 0)
       , Element.paddingXY 50 2
       , Font.bold
-      , Font.size 50
+      , Font.size 30
       ]
     (text ("SCORE: " ++ (String.fromInt score)))
 
@@ -277,19 +276,23 @@ titleGameOver =
     , Element.paddingXY 50 2
     , Font.bold
     , Font.color (rgb255 255 255 255)
-    , Font.size 80
+    , Font.size 70
     ]
     (text "GAME OVER")
 
 
-fieldDraw : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Html msg
-fieldDraw snake berries = 
+fieldDraw : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Html msg
+fieldDraw snake berries score = 
   layout
     []
     <|
     el [ centerX, centerY ]
       <|
-      column [] (List.indexedMap (\yIndex _ -> fieldRow snake berries yIndex) (List.repeat 9 cell))
+      row [spacing 20] 
+        [ scoreElement score,
+          column []
+            (List.indexedMap (\yIndex _ -> fieldRow snake berries yIndex) (List.repeat 9 cell))
+        ]
 
 
 fieldRow : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Element msg
