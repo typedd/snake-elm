@@ -11,6 +11,7 @@ import Keyboard exposing (RawKey, Key)
 import Random exposing (..)
 
 
+
 -- MAIN
 
 
@@ -30,6 +31,7 @@ type alias Berry =
   , y : Int
   }
 
+
 type alias Model =
   { snake: List { x : Int, y : Int }
   , berries: List Berry
@@ -38,11 +40,7 @@ type alias Model =
   , gameOverPage: Bool
   , score: Int
   }
-
---initBerries :  List Berry
---initBerries =
---  Random.generate RandomBerry (Random.list 81 randomGenerator)
-    
+ 
 
 init : () -> (Model, Cmd Msg)
 init _ =
@@ -58,11 +56,15 @@ init _ =
   }, randomCmd
   )
 
+
 randomGenerator : Random.Generator (Int, Int)
 randomGenerator =
   Random.pair (Random.int 0 8) (Random.int 0 8)
 
+
+
 -- UPDATE
+
 
 type DirectionSnake
     = UP
@@ -76,6 +78,7 @@ type Msg
   | KeyDown RawKey
   | KeyUp RawKey
   | RandomBerry (List (Int, Int))
+
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -183,10 +186,12 @@ removeBerry : List Berry -> Int -> Int -> List Berry
 removeBerry berries xToRemove yToRemove =
   List.filter (\berry -> berry.x /= xToRemove || berry.y /= yToRemove) berries
 
+
 --проверяем попадает ли ягода на змею
 isBerryOnSnake : Berry -> List { x : Int, y : Int } -> Bool
 isBerryOnSnake berry snake =
   List.any (\segment -> segment.x == berry.x && segment.y == berry.y) snake
+
 
 --проверяем врезалась ли змейка в стену или съела себя 
 isGameOver : List { x : Int, y : Int } -> Bool
