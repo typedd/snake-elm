@@ -39,6 +39,8 @@ type alias Model =
   , starterPage: Bool
   , gameOverPage: Bool
   , score: Int
+  , level: Int
+  , record: Int
   }
  
 
@@ -53,6 +55,8 @@ init _ =
     , starterPage = True
     , gameOverPage = False
     , score = 0
+    , level = 1
+    , record = 0
   }, randomCmd
   )
 
@@ -111,6 +115,9 @@ update msg model =
           newSnake =
             if ateBerry then (headPosition :: List.take (List.length model.snake) model.snake)
             else (headPosition :: List.take (List.length model.snake - 1) model.snake)
+          
+          newLevel =
+            if newScore == 3 then model.level + 1 else model.level
 
           cmd : Cmd Msg
           cmd = 
@@ -124,7 +131,7 @@ update msg model =
               { model | gameOverPage = True }
               , Cmd.none)
           else (
-            { model | snake = newSnake, score = newScore }
+            { model | snake = newSnake, score = newScore, level = newLevel }
             , cmd)
 
       KeyDown key ->
@@ -162,6 +169,8 @@ update msg model =
             , starterPage = True
             , gameOverPage = False
             , score = 0
+            , level = 1
+            , record = model.record
             }, randomCmd
             )
         else
@@ -214,16 +223,41 @@ isGameOver snake =
 
 view : Model -> Html Msg
 view model =
-  if model.starterPage == True then gameStart 
+  if model.starterPage == True then viewGameStart 
   else 
-    if model.gameOverPage == True then gameOver model.score
+    if model.gameOverPage == True then viewGameOver model.score
     else 
-      fieldDraw model.snake model.berries model.score
+      fieldDraw model.snake model.berries model.score model.level
+
+
+viewGameStart : Html msg
+viewGameStart = 
+  layout
+    []
+    <|
+    el [ centerX, centerY ]
+      <|
+      column [spacing 10] [titleSnakeElm, titlePressAnyKey]
+
+
+viewGameOver : Int -> Html msg
+viewGameOver score = 
+  layout
+    []
+    <|
+    el [ centerX, centerY ]
+      <|
+      column [spacing 10] 
+        [ titleGameOver
+        , titleScore score
+        , titleRecord
+        , titlePressAnyKey
+        ]
 
 
 --titleScore : 
-scoreElement : Int -> Element msg
-scoreElement score =
+titleScore : Int -> Element msg
+titleScore score =
     el [ centerX, centerY
       , Element.paddingXY 50 2
       , Font.bold
@@ -231,19 +265,41 @@ scoreElement score =
       ]
     (text ("SCORE: " ++ (String.fromInt score)))
 
+--titleLevel : 
+titleLevel : Int -> Element msg
+titleLevel level =
+    el [ centerX, centerY
+      , Element.paddingXY 50 2
+      , Font.bold
+      , Font.size 30
+      ]
+    (text ("LEVEL: " ++ (String.fromInt level)))
 
-gameStart : Html msg
-gameStart = 
-  layout
-    []
-    <|
-    el [ centerX, centerY ]
-      <|
-      column [spacing 10] [title, subTitle]
+
+--titleTime : 
+titleTime : Element msg
+titleTime =
+    el [ centerX, centerY
+      , Element.paddingXY 50 2
+      , Font.bold
+      , Font.size 30
+      ]
+    (text ("Time: " ++ "00:00"))
 
 
-title : Element msg
-title =
+--titleTime : 
+titleRecord : Element msg
+titleRecord =
+    el [ Background.color (rgb255 165 245 65)
+      , Element.paddingXY 50 2
+      , Font.bold
+      , Font.size 30
+      ]
+    (text ("RECORD: " ++ "999"))
+
+
+titleSnakeElm : Element msg
+titleSnakeElm =
   el [ Background.color (rgb255 0 255 0)
     , Element.paddingXY 50 2
     , Font.bold
@@ -252,8 +308,8 @@ title =
     (text "SNAKE ELM")
 
 
-subTitle : Element msg
-subTitle =
+titlePressAnyKey : Element msg
+titlePressAnyKey =
   el [ centerX, centerY
     , Background.color (rgb255 0 0 255)
     , Element.paddingXY 30 5
@@ -263,16 +319,6 @@ subTitle =
     , Border.rounded 5
     ]
     (text "Press any key")
-
-
-gameOver : Int -> Html msg
-gameOver score = 
-  layout
-    []
-    <|
-    el [ centerX, centerY ]
-      <|
-      column [spacing 10] [titleGameOver, scoreElement score, subTitle]
 
 
 titleGameOver : Element msg
@@ -286,19 +332,19 @@ titleGameOver =
     (text "GAME OVER")
 
 
-fieldDraw : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Html msg
-fieldDraw snake berries score = 
+fieldDraw : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Int-> Html msg
+fieldDraw snake berries score level = 
   layout
     []
     <|
     el [ centerX, centerY ]
       <|
-      row [spacing 20] 
-        [ scoreElement score,
-          column []
-            (List.indexedMap (\yIndex _ -> fieldRow snake berries yIndex) (List.repeat 9 cell))
+      column []
+        [ row [spacing 10]
+            [ column [] [titleSnakeElm, titleScore score, titleLevel level, titleTime, titleRecord]
+            , column [] (List.indexedMap (\yIndex _ -> fieldRow snake berries yIndex) (List.repeat 9 cell))
+            ]
         ]
-
 
 fieldRow : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Element msg
 fieldRow snake berries yIndex =
