@@ -11,6 +11,7 @@ import Keyboard exposing (RawKey, Key)
 import Random exposing (..)
 
 
+
 -- MAIN
 
 
@@ -25,39 +26,47 @@ main =
 
 -- MODEL
 
-type alias Berry = 
+type alias Berry =
   { x : Int
-  , y : Int 
+  , y : Int
   }
+
 
 type alias Model =
   { snake: List { x : Int, y : Int }
   , berries: List Berry
-  , directHead: DirSnake
+  , directHead: DirectionSnake
   , starterPage: Bool
+  , gameOverPage: Bool
+  , score: Int
   }
-
---initBerries : Int -> List Berry
---initBerries countBerries =
---    [{x = 2, y = 7}, {x = 6, y = 4}, {x = 0, y = 0}]
-    
+ 
 
 init : () -> (Model, Cmd Msg)
 init _ =
-  ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]
-  , berries = []
-  , directHead = UP
-  , starterPage = True
-  }, Cmd.none
+  let
+    randomCmd = Random.generate RandomBerry (Random.list 10 randomGenerator)
+  in
+    ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]
+    , berries = []
+    , directHead = UP
+    , starterPage = True
+    , gameOverPage = False
+    , score = 0
+  }, randomCmd
   )
+
 
 randomGenerator : Random.Generator (Int, Int)
 randomGenerator =
   Random.pair (Random.int 0 8) (Random.int 0 8)
 
+
+
 -- UPDATE
 
-type DirSnake
+
+type DirectionSnake
     = UP
     | DOWN
     | LEFT
@@ -70,6 +79,7 @@ type Msg
   | KeyUp RawKey
   | RandomBerry (List (Int, Int))
 
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
@@ -77,17 +87,13 @@ update msg model =
         let
           (dx, dy) =
             case model.directHead of
-              UP -> 
-                (0, if (isHeadLeaveTop model) then -1 else 8)
+              UP -> (0, -1)
 
-              DOWN -> 
-                (0, if (isHeadLeaveBottom model) then 1 else -8)
+              DOWN -> (0, 1)
 
-              LEFT -> 
-                (if (isHeadLeaveLeft model) then -1 else 8, 0)
+              LEFT -> (-1, 0)
 
-              RIGHT -> 
-                (if (isHeadLeaveRight model) then 1 else -8, 0)
+              RIGHT -> (1, 0)
 
           headPosition =
             case List.head model.snake of
@@ -95,9 +101,12 @@ update msg model =
               Nothing -> { x = 0, y = 0 } 
 
           ateBerry =
-            List.any (\berry -> berry.x == headPosition.x && berry.y == headPosition.y) model.berries  
+            List.any (\berry -> berry.x == headPosition.x && berry.y == headPosition.y) model.berries
 
-          newBerries = removeBerry model.berries headPosition.x headPosition.y --if ateBerry then removeBerry model.berries 0 0 else model.berries
+          newScore =
+            if ateBerry then model.score + 1 else model.score  -- Увеличиваем счет при съедании ягоды  
+
+          newBerries = removeBerry model.berries headPosition.x headPosition.y
 
           newSnake =
             if ateBerry then (headPosition :: List.take (List.length model.snake) model.snake)
@@ -109,9 +118,13 @@ update msg model =
             else Cmd.none
 
         in
-          if model.starterPage == True then (model, cmd) 
+          if model.starterPage == True then (model, Cmd.none) 
+          else 
+            if isGameOver model.snake then (
+              { model | gameOverPage = True }
+              , Cmd.none)
           else (
-            { model | snake = newSnake }
+            { model | snake = newSnake, score = newScore }
             , cmd)
 
       KeyDown key ->
@@ -139,20 +152,28 @@ update msg model =
               { model | directHead = newDirection }, Cmd.none)
 
       KeyUp _ ->
-        ({ model | starterPage = False }, Cmd.none)
+        if model.gameOverPage == True then
+          let
+            randomCmd = Random.generate RandomBerry (Random.list 10 randomGenerator)
+          in
+            ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]
+            , berries = []
+            , directHead = UP
+            , starterPage = True
+            , gameOverPage = False
+            , score = 0
+            }, randomCmd
+            )
+        else
+          ({ model | starterPage = False }, Cmd.none)
 
       RandomBerry listCoord ->
         let
           coords : List (Int, Int)
           coords = listCoord
 
-          headPosition =
-            case List.head model.snake of
-              Just { x, y } -> { x = x, y = y }
-              Nothing -> { x = 0, y = 0 } 
-
           listBerries : List Berry
-          listBerries = removeBerry model.berries headPosition.x headPosition.y ++ List.map (\(x, y) -> { x = x, y = y }) coords
+          listBerries = model.berries ++ List.map (\(x, y) -> { x = x, y = y }) coords
 
           newlistBerries = List.take 3 (List.filter (\berry -> not (isBerryOnSnake berry model.snake)) listBerries)
 
@@ -165,17 +186,50 @@ removeBerry : List Berry -> Int -> Int -> List Berry
 removeBerry berries xToRemove yToRemove =
   List.filter (\berry -> berry.x /= xToRemove || berry.y /= yToRemove) berries
 
+
 --проверяем попадает ли ягода на змею
 isBerryOnSnake : Berry -> List { x : Int, y : Int } -> Bool
 isBerryOnSnake berry snake =
   List.any (\segment -> segment.x == berry.x && segment.y == berry.y) snake
+
+
+--проверяем врезалась ли змейка в стену или съела себя 
+isGameOver : List { x : Int, y : Int } -> Bool
+isGameOver snake =
+    case List.head snake of
+        Just head ->
+          if (head.x < 0 || head.x > 8 || head.y < 0 || head.y > 8) then True 
+          else 
+            if List.any (\segment -> segment.x == head.x && segment.y == head.y) (List.drop 1 snake) then
+              True
+            else
+              False
+        Nothing ->
+            True
+
+
 
 -- VIEW
 
 
 view : Model -> Html Msg
 view model =
-  if model.starterPage == True then gameStart else fieldDrow model.snake model.berries
+  if model.starterPage == True then gameStart 
+  else 
+    if model.gameOverPage == True then gameOver model.score
+    else 
+      fieldDraw model.snake model.berries model.score
+
+
+--titleScore : 
+scoreElement : Int -> Element msg
+scoreElement score =
+    el [ centerX, centerY
+      , Element.paddingXY 50 2
+      , Font.bold
+      , Font.size 30
+      ]
+    (text ("SCORE: " ++ (String.fromInt score)))
 
 
 gameStart : Html msg
@@ -187,6 +241,7 @@ gameStart =
       <|
       column [spacing 10] [title, subTitle]
 
+
 title : Element msg
 title =
   el [ Background.color (rgb255 0 255 0)
@@ -196,6 +251,7 @@ title =
     ]
     (text "SNAKE ELM")
 
+
 subTitle : Element msg
 subTitle =
   el [ centerX, centerY
@@ -203,19 +259,45 @@ subTitle =
     , Element.paddingXY 30 5
     , Font.bold
     , Font.size 40
-    , Border.rounded 3
+    , Font.color (rgb255 255 255 255)
+    , Border.rounded 5
     ]
     (text "Press any key")
 
 
-fieldDrow : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Html msg
-fieldDrow snake berries = 
+gameOver : Int -> Html msg
+gameOver score = 
   layout
     []
     <|
     el [ centerX, centerY ]
       <|
-      column [] (List.indexedMap (\yIndex _ -> fieldRow snake berries yIndex) (List.repeat 9 cell))
+      column [spacing 10] [titleGameOver, scoreElement score, subTitle]
+
+
+titleGameOver : Element msg
+titleGameOver =
+  el [ Background.color (rgb255 255 0 0)
+    , Element.paddingXY 50 2
+    , Font.bold
+    , Font.color (rgb255 255 255 255)
+    , Font.size 70
+    ]
+    (text "GAME OVER")
+
+
+fieldDraw : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Html msg
+fieldDraw snake berries score = 
+  layout
+    []
+    <|
+    el [ centerX, centerY ]
+      <|
+      row [spacing 20] 
+        [ scoreElement score,
+          column []
+            (List.indexedMap (\yIndex _ -> fieldRow snake berries yIndex) (List.repeat 9 cell))
+        ]
 
 
 fieldRow : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Element msg
@@ -276,29 +358,7 @@ cellBerry =
     ]
     Element.none
 
-isHeadLeaveTop : Model -> Bool
-isHeadLeaveTop model =
-    case List.head model.snake of
-        Just head -> (head.y > 0)
-        Nothing -> False
 
-isHeadLeaveLeft : Model -> Bool
-isHeadLeaveLeft model =
-    case List.head model.snake of
-        Just head -> (head.x > 0)
-        Nothing -> False
-
-isHeadLeaveBottom : Model -> Bool
-isHeadLeaveBottom model =
-    case List.head model.snake of
-        Just head -> (head.y < 8)
-        Nothing -> False
-
-isHeadLeaveRight : Model -> Bool
-isHeadLeaveRight model =
-    case List.head model.snake of
-        Just head -> (head.x < 8)
-        Nothing -> False
 
 -- SUBSCRIPTIONS
 
