@@ -93,8 +93,10 @@ update msg model =
         let
 
           -- Обновляем игровое время
+          --newGameTime = Time.posixToMillis time - Time.posixToMillis model.gameTime
+
           newGameTime = time
-          
+
           (dx, dy) =
             case model.directHead of
               UP -> (0, -1)
@@ -361,7 +363,7 @@ formatTime time =
     remainingSeconds = modBy 60 seconds
 
   in
-    "0" ++ String.fromInt minutes ++ ":" ++ if (remainingSeconds < 10) then "0" ++ String.fromInt remainingSeconds else String.fromInt remainingSeconds
+    String.fromInt minutes ++ ":" ++ String.padLeft 2 '0' (String.fromInt remainingSeconds)
 
 fieldDraw : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Int -> Time.Posix -> Int -> Html msg
 fieldDraw snake berries score level gameTime record= 
