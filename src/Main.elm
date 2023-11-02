@@ -41,6 +41,7 @@ type alias Model =
   , score: Int
   , level: Int
   , record: Int
+  , gameTime: Time.Posix
   }
  
 
@@ -49,7 +50,7 @@ init _ =
   let
     randomCmd = Random.generate RandomBerry (Random.list 10 randomGenerator)
   in
-    ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7}]
+    ({snake = [{ x = 4, y = 4 }, { x = 4, y = 5 }, { x = 4, y = 6 }, {x = 4, y = 7 }]
     , berries = []
     , directHead = UP
     , starterPage = True
@@ -57,6 +58,7 @@ init _ =
     , score = 0
     , level = 1
     , record = 0
+    , gameTime = Time.millisToPosix 0
   }, randomCmd
   )
 
@@ -87,8 +89,12 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-      Tick _ ->
+      Tick time ->
         let
+
+          -- Обновляем игровое время
+          newGameTime = time
+          
           (dx, dy) =
             case model.directHead of
               UP -> (0, -1)
@@ -115,24 +121,33 @@ update msg model =
           newSnake =
             if ateBerry then (headPosition :: List.take (List.length model.snake) model.snake)
             else (headPosition :: List.take (List.length model.snake - 1) model.snake)
-          
+
+          --повышаем level
           newLevel =
-            if newScore == 3 then model.level + 1 else model.level
+            if ateBerry && (modBy 5 (model.score + 1) == 0) then
+              model.level + 1
+            else
+              model.level
 
           cmd : Cmd Msg
           cmd = 
             if (List.length newBerries < 4) then Random.generate RandomBerry (Random.list 81 randomGenerator)
             else Cmd.none
 
+          newRecord : Int
+          newRecord = 
+            if (model.record < newScore) then newScore
+            else model.record
+
         in
           if model.starterPage == True then (model, Cmd.none) 
           else 
             if isGameOver model.snake then (
-              { model | gameOverPage = True }
+              { model | gameOverPage = True, record = newRecord }
               , Cmd.none)
-          else (
-            { model | snake = newSnake, score = newScore, level = newLevel }
-            , cmd)
+            else (
+              { model | snake = newSnake, score = newScore, level = newLevel, gameTime = newGameTime }
+              , cmd)
 
       KeyDown key ->
         let
@@ -171,6 +186,7 @@ update msg model =
             , score = 0
             , level = 1
             , record = model.record
+            , gameTime = Time.millisToPosix 0
             }, randomCmd
             )
         else
@@ -225,9 +241,9 @@ view : Model -> Html Msg
 view model =
   if model.starterPage == True then viewGameStart 
   else 
-    if model.gameOverPage == True then viewGameOver model.score
+    if model.gameOverPage == True then viewGameOver model.score model.record
     else 
-      fieldDraw model.snake model.berries model.score model.level
+      fieldDraw model.snake model.berries model.score model.level model.gameTime model.record
 
 
 viewGameStart : Html msg
@@ -237,11 +253,14 @@ viewGameStart =
     <|
     el [ centerX, centerY ]
       <|
-      column [spacing 10] [titleSnakeElm, titlePressAnyKey]
+      column [spacing 10] 
+      [ titleSnakeElm
+      , titlePressAnyKey
+      ]
 
 
-viewGameOver : Int -> Html msg
-viewGameOver score = 
+viewGameOver : Int -> Int -> Html msg
+viewGameOver score record= 
   layout
     []
     <|
@@ -250,7 +269,7 @@ viewGameOver score =
       column [spacing 10] 
         [ titleGameOver
         , titleScore score
-        , titleRecord
+        , titleRecord record
         , titlePressAnyKey
         ]
 
@@ -265,6 +284,7 @@ titleScore score =
       ]
     (text ("SCORE: " ++ (String.fromInt score)))
 
+
 --titleLevel : 
 titleLevel : Int -> Element msg
 titleLevel level =
@@ -277,25 +297,26 @@ titleLevel level =
 
 
 --titleTime : 
-titleTime : Element msg
-titleTime =
+titleGameTime : Time.Posix -> Element msg
+titleGameTime gameTime =
     el [ centerX, centerY
       , Element.paddingXY 50 2
       , Font.bold
       , Font.size 30
       ]
-    (text ("Time: " ++ "00:00"))
+    (text ("Time: " ++ formatTime gameTime))
 
 
 --titleTime : 
-titleRecord : Element msg
-titleRecord =
-    el [ Background.color (rgb255 165 245 65)
+titleRecord : Int -> Element msg
+titleRecord record =
+    el [ centerX, centerY
+      , Background.color (rgb255 165 245 65)
       , Element.paddingXY 50 2
       , Font.bold
       , Font.size 30
       ]
-    (text ("RECORD: " ++ "999"))
+    (text ("RECORD: " ++ (String.fromInt record)))
 
 
 titleSnakeElm : Element msg
@@ -332,8 +353,18 @@ titleGameOver =
     (text "GAME OVER")
 
 
-fieldDraw : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Int-> Html msg
-fieldDraw snake berries score level = 
+formatTime : Time.Posix -> String
+formatTime time =
+  let
+    seconds = (Time.posixToMillis time) // 1000
+    minutes = seconds // 60
+    remainingSeconds = modBy 60 seconds
+
+  in
+    "0" ++ String.fromInt minutes ++ ":" ++ if (remainingSeconds < 10) then "0" ++ String.fromInt remainingSeconds else String.fromInt remainingSeconds
+
+fieldDraw : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Int -> Time.Posix -> Int -> Html msg
+fieldDraw snake berries score level gameTime record= 
   layout
     []
     <|
@@ -341,10 +372,11 @@ fieldDraw snake berries score level =
       <|
       column []
         [ row [spacing 10]
-            [ column [] [titleSnakeElm, titleScore score, titleLevel level, titleTime, titleRecord]
+            [ column [] [titleSnakeElm, titleScore score, titleLevel level, titleGameTime gameTime, titleRecord record]
             , column [] (List.indexedMap (\yIndex _ -> fieldRow snake berries yIndex) (List.repeat 9 cell))
             ]
         ]
+
 
 fieldRow : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Element msg
 fieldRow snake berries yIndex =
@@ -394,6 +426,7 @@ cellHeadSnake =
     ]
     Element.none
 
+
 cellBerry : Element msg
 cellBerry = 
   el
@@ -412,7 +445,14 @@ cellBerry =
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
-    [ if model.starterPage == False then Time.every 500 Tick else Sub.none
+    [ if model.starterPage == False then Time.every (calculateTickInterval model) Tick else Sub.none
     , Keyboard.downs KeyDown
     , Keyboard.ups KeyUp
     ]
+
+calculateTickInterval : Model -> Float
+calculateTickInterval model = 
+  if model.starterPage || model.level <= 1 then
+    500
+  else
+    500 - (toFloat(model.level) * 100)
