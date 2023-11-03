@@ -42,6 +42,7 @@ type alias Model =
   , level: Int
   , record: Int
   , gameTime: Time.Posix
+  , seconds: Int
   }
  
 
@@ -59,6 +60,7 @@ init _ =
     , level = 1
     , record = 0
     , gameTime = Time.millisToPosix 0
+    , seconds = 0
   }, randomCmd
   )
 
@@ -92,10 +94,12 @@ update msg model =
       Tick time ->
         let
 
-          -- Обновляем игровое время
-          --newGameTime = Time.posixToMillis time - Time.posixToMillis model.gameTime
-
           newGameTime = time
+
+          newSeconds = 
+            if (Time.posixToMillis time // 1000 /= Time.posixToMillis model.gameTime // 1000)
+              then (model.seconds + 1)
+            else model.seconds
 
           (dx, dy) =
             case model.directHead of
@@ -115,8 +119,9 @@ update msg model =
           ateBerry =
             List.any (\berry -> berry.x == headPosition.x && berry.y == headPosition.y) model.berries
 
+          -- Увеличиваем счет при съедании ягоды 
           newScore =
-            if ateBerry then model.score + 1 else model.score  -- Увеличиваем счет при съедании ягоды  
+            if ateBerry then model.score + 1 else model.score 
 
           newBerries = removeBerry model.berries headPosition.x headPosition.y
 
@@ -148,7 +153,7 @@ update msg model =
               { model | gameOverPage = True, record = newRecord }
               , Cmd.none)
             else (
-              { model | snake = newSnake, score = newScore, level = newLevel, gameTime = newGameTime }
+              { model | snake = newSnake, score = newScore, level = newLevel, gameTime = newGameTime, seconds = newSeconds }
               , cmd)
 
       KeyDown key ->
@@ -189,6 +194,7 @@ update msg model =
             , level = 1
             , record = model.record
             , gameTime = Time.millisToPosix 0
+            , seconds = 0
             }, randomCmd
             )
         else
@@ -244,8 +250,8 @@ view model =
   if model.starterPage == True then viewGameStart 
   else 
     if model.gameOverPage == True then viewGameOver model.score model.record
-    else 
-      fieldDraw model.snake model.berries model.score model.level model.gameTime model.record
+    else
+      fieldDraw model.snake model.berries model.score model.level model.seconds model.record
 
 
 viewGameStart : Html msg
@@ -299,17 +305,23 @@ titleLevel level =
 
 
 --titleTime : 
-titleGameTime : Time.Posix -> Element msg
-titleGameTime gameTime =
+titleTimeGame : Int -> Element msg
+titleTimeGame seconds = 
     el [ centerX, centerY
       , Element.paddingXY 50 2
       , Font.bold
       , Font.size 30
       ]
-    (text ("Time: " ++ formatTime gameTime))
+    (text 
+      ("Time: "
+      ++ String.padLeft 2 '0' (String.fromInt (seconds // 60))
+      ++ ":"
+      ++ String.padLeft 2 '0' (String.fromInt (modBy 60 seconds))
+      )
+    )
 
 
---titleTime : 
+--titleRecord 
 titleRecord : Int -> Element msg
 titleRecord record =
     el [ centerX, centerY
@@ -355,18 +367,8 @@ titleGameOver =
     (text "GAME OVER")
 
 
-formatTime : Time.Posix -> String
-formatTime time =
-  let
-    seconds = (Time.posixToMillis time) // 1000
-    minutes = seconds // 60
-    remainingSeconds = modBy 60 seconds
-
-  in
-    String.fromInt minutes ++ ":" ++ String.padLeft 2 '0' (String.fromInt remainingSeconds)
-
-fieldDraw : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Int -> Time.Posix -> Int -> Html msg
-fieldDraw snake berries score level gameTime record= 
+fieldDraw : List { x : Int, y : Int } -> List { x : Int, y : Int } -> Int -> Int -> Int -> Int -> Html msg
+fieldDraw snake berries score level seconds record= 
   layout
     []
     <|
@@ -374,7 +376,12 @@ fieldDraw snake berries score level gameTime record=
       <|
       column []
         [ row [spacing 10]
-            [ column [] [titleSnakeElm, titleScore score, titleLevel level, titleGameTime gameTime, titleRecord record]
+            [ column [] 
+              [titleSnakeElm
+              , titleScore score
+              , titleLevel level
+              , titleTimeGame seconds
+              , titleRecord record]
             , column [] (List.indexedMap (\yIndex _ -> fieldRow snake berries yIndex) (List.repeat 9 cell))
             ]
         ]
